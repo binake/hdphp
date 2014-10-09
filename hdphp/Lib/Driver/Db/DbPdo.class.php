@@ -116,10 +116,10 @@ class DbPdo extends Db
         $list = $this->PDOStatement->fetchAll(PDO::FETCH_ASSOC);
         //受影响条数
         $this->affectedRows = count($list);
-        if ($cache_time >= 0 && count($list) <= C("CACHE_SELECT_LENGTH")) {
+        if ($list && $cache_time >= 0 && count($list) <= C("CACHE_SELECT_LENGTH")) {
             S($cacheName, $list, $cache_time, array("Driver" => "file", "dir" => APP_CACHE_PATH, "zip" => false));
         }
-        return $list ? $list : NULL;
+        return empty($list) ? array() : $list;
     }
 
     //遍历结果集(根据INSERT_ID)

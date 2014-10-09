@@ -122,10 +122,10 @@ class DbMysql extends Db
         while (($res = $this->fetch()) != false) {
             $list [] = $res;
         }
-        if ($cache_time >= 0 && count($list) <= C("CACHE_SELECT_LENGTH")) {
+        if ($list && $cache_time >= 0 && count($list) <= C("CACHE_SELECT_LENGTH")) {
             S($cacheName, $list, $cache_time, array("Driver" => "file", "dir" => APP_CACHE_PATH, "zip" => false));
         }
-        return is_array($list) && !empty($list) ? $list : NULL;
+        return empty($list) ? array():$list ;
     }
 
     //释放结果集
