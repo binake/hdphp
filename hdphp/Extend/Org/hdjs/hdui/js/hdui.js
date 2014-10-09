@@ -278,7 +278,7 @@ $.extend({
 });
 function hd_confirm(message, success, error) {
     return $.modal({
-        width: 280,
+        width: 320,
         height: 160,
         title: "温馨提示",
         message: message,
