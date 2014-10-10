@@ -105,6 +105,8 @@ class ViewCompile
     {
         //标签库类
         $tagClass = array();
+        //加载框架核心标签库
+        if (import('HDPHP.Lib.Driver.View.ViewTag')) $tagClass[] = 'ViewTag';
         //加载扩展标签库
         $tags = C('TPL_TAGS');
         //如果配置文件中存在标签定义
@@ -123,21 +125,13 @@ class ViewCompile
                 ) {
                 } else if (import($file)) {
                 } else {
-                    if (DEBUG) {
-                        halt("标签类文件{$class}不存在");
-                    } else {
-                        continue;
-                    }
+                    continue;
                 }
                 $tmp = explode(".", $class);
                 $tagClass[] = array_pop($tmp);
             }
         }
-        //加载框架核心标签库
-        if (import('HDPHP.Lib.Driver.View.ViewTag')) {
-            $tagClass[] = 'ViewTag';
-            $this->parseTagClass($tagClass);
-        }
+        $this->parseTagClass($tagClass);
     }
 
     /**

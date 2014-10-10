@@ -41,7 +41,7 @@ class ViewTag
         'css' => array('block' => 0),
         'noempty' => array('block' => 0),
         'ueditor' => array('block' => 0),
-        'highlight' => array('block' => 0),
+        'codehighlight'=>array('block' => 0),//代码高亮
         'jquery' => array('block' => 0),
         'jcrop' => array('block' => 0),
         'upload' => array('block' => 0), //uploadif上传组件
@@ -338,7 +338,7 @@ class ViewTag
             'lineheight', '|','paragraph', 'fontfamily', 'fontsize', '|',
              'indent','justifyleft', 'justifycenter', 'justifyright', 'justifyjustify', '|',
             'link', 'unlink', '|', 'imagenone', 'imageleft', 'imageright', 'imagecenter', '|',
-            'simpleupload',  'emotion',   'map',  'insertcode',  'pagebreak','horizontal', '|',
+            'insertimage', 'emotion',   'map',  'insertcode',  'pagebreak','horizontal', '|',
             'inserttable', 'deletetable', 'insertparagraphbeforetable', 'insertrow',  'insertcol',  'mergecells', 'mergeright', 'mergedown', 'splittocells', 'splittorows', 'splittocols']
             ]";
         }
@@ -369,20 +369,20 @@ class ViewTag
         </script>";
         return $str;
     }
-
     //代码高亮
-    public function _highlight()
-    {
-        return '<link type="text/css" rel="stylesheet" href="__HDPHP_EXTEND__/Org/Editor/Keditor/plugins/code/prettify.css"/>
-                <script type="text/javascript" charset="utf-8" src="__HDPHP_EXTEND__/Org/Ueditor/third-party/codemirror/codemirror.js"></script>
-                <link rel="stylesheet" type="text/css" href="__HDPHP_EXTEND__/Org/Ueditor/third-party/codemirror/codemirror.css"/>
-                <script>
-                    var editor = CodeMirror.fromTextArea(myTextarea, {
-                        mode: "text/html"
-                    });
-                </script>';
+    public function _codehighlight($attr,$content){
+        $php=<<<php
+            <script type="text/javascript" src="__HDPHP_EXTEND__/Org/SyntaxHighlighter/scripts/shCore.js"></script>
+            <script type="text/javascript" src="__HDPHP_EXTEND__/Org/SyntaxHighlighter/scripts/shBrushPhp.js"></script>
+            <link type="text/css" rel="stylesheet" href="__HDPHP_EXTEND__/Org/SyntaxHighlighter/styles/shCore.css"/>
+            <link type="text/css" rel="stylesheet" href="__HDPHP_EXTEND__/Org/SyntaxHighlighter/styles/shThemeDefault.css"/>
+            <script type="text/javascript">
+                SyntaxHighlighter.config.clipboardSwf = '__HDPHP_EXTEND__/Org/SyntaxHighlighter/scripts/clipboard.swf';
+                SyntaxHighlighter.all();
+            </script>
+php;
+        return $php;
     }
-
     //加载CSS文件
     public function _css($attr, $content)
     {
@@ -572,15 +572,6 @@ class ViewTag
         $str = '';
         $str .= "<link href='__HDPHP_EXTEND__/Org/bootstrap/css/bootstrap.min.css' rel='stylesheet' media='screen'>\n";
         $str .= "<script src='__HDPHP_EXTEND__/Org/bootstrap/js/bootstrap.min.js'></script>";
-        $str .= '
-                <!--[if lte IE 6]>
-                <link rel="stylesheet" type="text/css" href="__HDPHP_EXTEND__/Org/bootstrap/ie6/css/bootstrap-ie6.css">
-                <![endif]-->';
-        $str .= '
-                <!--[if lt IE 9]>
-                <script src="__HDPHP_EXTEND__/Org/bootstrap/js/html5shiv.min.js"></script>
-                <script src="__HDPHP_EXTEND__/Org/bootstrap/js/respond.min.js"></script>
-                <![endif]-->';
         return $str;
     }
 
@@ -635,4 +626,5 @@ class ViewTag
         return "<link type='text/css' rel='stylesheet' href='__HDPHP_EXTEND__/Org/jcrop/css/jquery.Jcrop.min.css'/>\n
         <script src='__HDPHP_EXTEND__/Org/jcrop/js/jquery.Jcrop.min.js'></script>\n";
     }
+
 }
