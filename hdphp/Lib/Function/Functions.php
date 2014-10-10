@@ -389,7 +389,7 @@ function cookie($name, $value = '', $option = array())
     }
     // 清除指定前缀的所有cookie
     if (is_null($name)) {
-        if (empty($_COOKIE))return;
+        if (empty($_COOKIE)) return;
         // 要删除的cookie前缀，不指定则删除config设置的指定前缀
         $prefix = empty($value) ? $config['prefix'] : $value;
         if (!empty($prefix)) { // 如果前缀为空字符串将不作处理直接返回
@@ -461,7 +461,7 @@ function C($name = null, $value = null)
         return $config;
     } else if (is_string($name)) {
         $name = strtoupper($name);
-        $data = array_change_key_case($config,CASE_UPPER);
+        $data = array_change_key_case($config, CASE_UPPER);
         if (!strstr($name, '.')) {
             //获得配置
             if (is_null($value)) {
@@ -479,7 +479,7 @@ function C($name = null, $value = null)
             }
         }
     } else if (is_array($name)) {
-        return $config = array_merge($config, array_change_key_case($name,CASE_UPPER));
+        return $config = array_merge($config, array_change_key_case($name, CASE_UPPER));
     }
 }
 
@@ -529,28 +529,28 @@ function Q($var, $default = null, $filter = null)
     //获得数据并执行相应的安全处理
     switch (strtolower($var[0])) {
         case 'get' :
-            $data = & $_GET;
+            $data = &$_GET;
             break;
         case 'post' :
-            $data = & $_POST;
+            $data = &$_POST;
             break;
         case 'request' :
-            $data = & $_REQUEST;
+            $data = &$_REQUEST;
             break;
         case 'files' :
-            $data = & $_FILES;
+            $data = &$_FILES;
             break;
         case 'session' :
-            $data = & $_SESSION;
+            $data = &$_SESSION;
             break;
         case 'cookie' :
-            $data = & $_COOKIE;
+            $data = &$_COOKIE;
             break;
         case 'server' :
-            $data = & $_SERVER;
+            $data = &$_SERVER;
             break;
         case 'globals' :
-            $data = & $GLOBALS;
+            $data = &$GLOBALS;
             break;
         default :
             throw_exception($var[0] . 'Q方法参数错误');
@@ -886,25 +886,25 @@ function _request($method, $varName = null, $html = true)
         case 'isput' :
             return strtolower($_SERVER['REQUEST_METHOD']) == strtolower(substr($method, 2));
         case 'get' :
-            $data = & $_GET;
+            $data = &$_GET;
             break;
         case 'post' :
-            $data = & $_POST;
+            $data = &$_POST;
             break;
         case 'request' :
-            $data = & $_REQUEST;
+            $data = &$_REQUEST;
             break;
         case 'Session' :
-            $data = & $_SESSION;
+            $data = &$_SESSION;
             break;
         case 'cookie' :
-            $data = & $_COOKIE;
+            $data = &$_COOKIE;
             break;
         case 'server' :
-            $data = & $_SERVER;
+            $data = &$_SERVER;
             break;
         case 'globals' :
-            $data = & $GLOBALS;
+            $data = &$GLOBALS;
             break;
         default :
             throw_exception('abc');
@@ -1066,7 +1066,7 @@ function U($path, $args = array())
             $root = __WEB__ . '/'; //入口位置
             break;
         case 2:
-            $root = __WEB__ . '?';
+            $root = C('URL_REWRITE') ? __WEB__.'/' : __WEB__ . '?';
             break;
         case 3:
             $root = __WEB__ . '?' . C('PATHINFO_VAR') . '=';
@@ -1077,7 +1077,7 @@ function U($path, $args = array())
     //模块组
     if (isset($_GET[C('VAR_GROUP')])) {
         $data[] = C('VAR_GROUP');
-        $data[] =$_GET[C('VAR_GROUP')];
+        $data[] = $_GET[C('VAR_GROUP')];
     }
     switch (count($vars)) {
         case 2: //应用

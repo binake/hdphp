@@ -18,7 +18,8 @@
  */
 class ViewTag
 {
-
+    //为Literal标签使用，记录literal标签号
+    static $literal=array();
     /**
      * block 块标签       1为块标签  0独立标签
      * 块标题不用设置，行标签必须设置
@@ -52,11 +53,22 @@ class ViewTag
         'hdui' => array('block' => 0),//hdjs前台ui库
         'hdvalidate'=>array('block'=>0),//hdvalidate前端验证
         'hdslide' => array('block' => 0),//轮换版
-        'cal' => array('block' => 0)
+        'cal' => array('block' => 0),//日历
+        'literal'=>array('block' => 1, 'level' => 5)//Literal 标签区域内的数据将被当作文本处理
     );
 
+    /**
+     * 标签区域内的数据将被当作文本处理
+     * @param $attr
+     * @param $content
+     * @return mixed
+     */
+    public function _literal($attr,$content){
+       self::$literal[]=$content;
+       $id=count(self::$literal)-1;
+       return '###hd:Literal'.$id.'###';
+    }
     //格式化参数 字符串加引号
-
     private function formatArg($arg)
     {
         $valueFormat = trim(trim($arg, "'"), '"');
@@ -93,9 +105,7 @@ class ViewTag
     //图片放大镜
     public function _zoom($attr, $content)
     {
-        if (!isset($attr['data']) || !isset($attr['big']) || !isset($attr['small'])) {
-            halt('zoom标签必须设置 big、small、data属性', false); //zoom标签必须设置 pid、sid、data属性，检查一下看哪个没有设置
-        }
+        if (!isset($attr['data']) || !isset($attr['big']) || !isset($attr['small']))return;
         $data = $attr['data'];
         $big = $attr['big'];
         $small = $attr['small'];
@@ -382,9 +392,7 @@ class ViewTag
 
     public function _js($attr, $content)
     {
-        if (!isset($attr['file'])) {
-            error("Js标签必须设置file属性");
-        }
+        if (!isset($attr['file'])) return;
         $attr = $this->replaceAttrConstVar($attr, true);
         return '<script type="text/javascript" src="' . $attr['file'] . '"></script>';
     }
@@ -392,8 +400,7 @@ class ViewTag
 
     public function _list($attr, $content)
     {
-        if (!isset($attr['from'])) halt('list标签缺少from属性');
-        if (!isset($attr['name'])) halt('list标签缺少name属性');
+        if (!isset($attr['from']) || !isset($attr['name'])) return;
         $var = $attr['from'];
         $name = str_replace('$', '', $attr['name']);
         $empty = isset($attr['empty']) ? $attr['empty'] : ''; //无数据时
@@ -429,9 +436,7 @@ class ViewTag
 
     public function _foreach($attr, $content)
     {
-        if (empty($attr['from'])) {
-            halt('foreach 模板标签必须有from属性', false); //foreach 模板标签必须有from属性
-        }
+        if (!isset($attr['from']))return;
         $php = ''; //组合成PHP
         $from = $attr['from'];
         $key = isset($attr['key']) ? $attr['key'] : '$key';
@@ -451,9 +456,7 @@ class ViewTag
      */
     public function _include($attr, $content)
     {
-        if (!isset($attr['file'])) {
-            halt('include 模板标签必须有file属性', false); //load标签必须有file属性
-        }
+        if (!isset($attr['file'])) return;
         $const = print_const(false, true);
         foreach ($const as $k => $v) {
             $attr['file'] = str_replace($k, $v, $attr['file']);
@@ -496,9 +499,7 @@ class ViewTag
 
     public function _if($attr, $content, $res)
     {
-        if (empty($attr['value'])) {
-            halt('if 模板标签必须有value属性', false); //if 模板标签必须有value属性
-        }
+        if (empty($attr['value']))return;
         $value = $attr['value'];
         $php = ''; //组合成PHP
         $php .= '<?php if(' . $value . '){?>';
@@ -525,9 +526,7 @@ class ViewTag
 
     public function _while($attr, $content, $res)
     {
-        if (empty($attr['value'])) {
-            halt('while模板标签必须有value属性', false);
-        }
+        if (empty($attr['value'])) return;
         $value = $attr['value'];
         $php = ''; //组合成PHP
         $php .= '<?php ' . " while($value){ ?>";
@@ -538,9 +537,7 @@ class ViewTag
 
     public function _empty($attr, $content, $res)
     {
-        if (empty($attr['value'])) {
-            halt('empty模板标签必须有value属性', false); //empty模板标签必须有value属性
-        }
+        if (empty($attr['value']))return;
         $value = $attr['value'];
         $php = "";
         $php = '<?php $_emptyVar =isset(' . $value . ')?' . $value . ':null?>';

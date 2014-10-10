@@ -183,8 +183,10 @@ final class HDPHP
     //致命错误处理
     static public function fatalError()
     {
-        if ($e = error_get_last()) {
-            self::error($e['type'], $e['message'], $e['file'], $e['line']);
+        if(function_exists('error_get_last')){
+            if ( $e = error_get_last()) {
+                self::error($e['type'], $e['message'], $e['file'], $e['line']);
+            }
         }
     }
 }
