@@ -373,7 +373,23 @@ class ViewTag
     public function _codehighlight($attr,$content){
         $php=<<<php
             <script type="text/javascript" src="__HDPHP_EXTEND__/Org/SyntaxHighlighter/scripts/shCore.js"></script>
+            <script type="text/javascript" src="__HDPHP_EXTEND__/Org/SyntaxHighlighter/scripts/shBrushBash.js"></script>
+            <script type="text/javascript" src="__HDPHP_EXTEND__/Org/SyntaxHighlighter/scripts/shBrushCpp.js"></script>
+            <script type="text/javascript" src="__HDPHP_EXTEND__/Org/SyntaxHighlighter/scripts/shBrushCSharp.js"></script>
+            <script type="text/javascript" src="__HDPHP_EXTEND__/Org/SyntaxHighlighter/scripts/shBrushCss.js"></script>
+            <script type="text/javascript" src="__HDPHP_EXTEND__/Org/SyntaxHighlighter/scripts/shBrushDelphi.js"></script>
+            <script type="text/javascript" src="__HDPHP_EXTEND__/Org/SyntaxHighlighter/scripts/shBrushDiff.js"></script>
+            <script type="text/javascript" src="__HDPHP_EXTEND__/Org/SyntaxHighlighter/scripts/shBrushGroovy.js"></script>
+            <script type="text/javascript" src="__HDPHP_EXTEND__/Org/SyntaxHighlighter/scripts/shBrushJava.js"></script>
+            <script type="text/javascript" src="__HDPHP_EXTEND__/Org/SyntaxHighlighter/scripts/shBrushJScript.js"></script>
             <script type="text/javascript" src="__HDPHP_EXTEND__/Org/SyntaxHighlighter/scripts/shBrushPhp.js"></script>
+            <script type="text/javascript" src="__HDPHP_EXTEND__/Org/SyntaxHighlighter/scripts/shBrushPlain.js"></script>
+            <script type="text/javascript" src="__HDPHP_EXTEND__/Org/SyntaxHighlighter/scripts/shBrushPython.js"></script>
+            <script type="text/javascript" src="__HDPHP_EXTEND__/Org/SyntaxHighlighter/scripts/shBrushRuby.js"></script>
+            <script type="text/javascript" src="__HDPHP_EXTEND__/Org/SyntaxHighlighter/scripts/shBrushScala.js"></script>
+            <script type="text/javascript" src="__HDPHP_EXTEND__/Org/SyntaxHighlighter/scripts/shBrushSql.js"></script>
+            <script type="text/javascript" src="__HDPHP_EXTEND__/Org/SyntaxHighlighter/scripts/shBrushVb.js"></script>
+            <script type="text/javascript" src="__HDPHP_EXTEND__/Org/SyntaxHighlighter/scripts/shBrushXml.js"></script>
             <link type="text/css" rel="stylesheet" href="__HDPHP_EXTEND__/Org/SyntaxHighlighter/styles/shCore.css"/>
             <link type="text/css" rel="stylesheet" href="__HDPHP_EXTEND__/Org/SyntaxHighlighter/styles/shThemeDefault.css"/>
             <script type="text/javascript">
