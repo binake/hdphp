@@ -38,8 +38,7 @@ abstract class View
             if (DEBUG)
                 halt("模板不存在:$file");
             else
-                return null;
+                return false;
         }
     }
-
 }

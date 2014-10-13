@@ -142,9 +142,6 @@ final class HDPHP
         ) {
             return;
         }
-//        $msg = "Class {$className} not found";
-//        Log::write($msg);
-//        halt($msg);
     }
 
     /**
@@ -169,6 +166,8 @@ final class HDPHP
                 $msg = $error. $file . " 第 $line 行.";
                 if(C('LOG_RECORD')) Log::write("[$errno] " . $msg, Log::ERROR);
                 function_exists('halt') ? halt($msg) : exit('ERROR:' . $msg);
+                break;
+            case E_DEPRECATED://忽略不建议使用的错误提示
                 break;
             default:
                 $errorStr = "[$errno] $error " . $file . " 第 $line 行.";
