@@ -357,12 +357,13 @@ class ViewTag
                 serverUrl:'" . $phpScript . "&water={$water}'//图片上传脚本
                 ,zIndex : 1000
                 ,initialFrameWidth:{$width} //宽度1000
+                ,catchRemoteImageEnable:false//关闭远程图片自动保存到本地
                 ,initialFrameHeight:{$height} //宽度1000
                 ,imagePath:''//图片修正地址
                 ,autoHeightEnabled:false //是否自动长高,默认true
                 ,autoFloatEnabled:false //是否保持toolbar的位置不动,默认true
                 ,toolbars:$toolbars//工具按钮
-//                ,enableAutoSave: false//关闭自动保存
+                ,enableAutoSave: false//关闭自动保存
                 ,initialStyle:'p{line-height:1em; font-size: 14px; }'
             });
         })
