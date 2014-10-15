@@ -93,7 +93,7 @@ return array(
     'UPLOAD_THUMB_ON'               => FALSE,       //上传图片缩略图处理
     'UPLOAD_ALLOW_TYPE'             => array('jpg','jpeg','gif','png','zip','rar','doc','txt'),//允许上传类型
     'UPLOAD_ALLOW_SIZE'             => 2097152,     //允许上传文件大小 单位B
-    'UPLOAD_PATH'                   => 'upload/',   //上传路径
+    'UPLOAD_PATH'                   => 'Upload/',   //上传路径
     /********************************图像水印处理********************************/
     'WATER_ON'                      => TRUE,           //开关
     'WATER_FONT'                    => HDPHP_PATH . 'Data/Font/font.ttf',   //水印字体
