@@ -49,7 +49,7 @@ var hd_uploadify_options = {
     onUploadSuccess: function (file, data, response) {
         //上传失败
         if (data.substr(0, 1) !== '{'){
-            alert(data);
+            return;
         }
         eval("data=" + data);
         var upload_file_id = this.settings.id;//表单id
@@ -65,7 +65,7 @@ var hd_uploadify_options = {
         var _index = this.setStats.successful_uploads;
         //更改上传成功信息
         alter_upload_msg(this);
-        data.url = data.isimage == 1 ? data.url : UPLOADIFY_URL + "default.png";
+        data.url = data.image == 1 ? data.url : UPLOADIFY_URL + "default.png";
         var div = $("." + upload_file_id + "_files ul");
         var html = "";
         var input_type = this.settings.input_type;

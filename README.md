@@ -67,6 +67,7 @@ HDPHP遵循Apache2开源协议发布。Apache Licence是著名的非盈利开源
 ### 2014-10-15
 1. 修复Data::channelList类方法
 2. 修复IE下Ueditor编辑器上传图片失败的问题
+3. 修复Uploaded上传插件不显示预览图的错误
 
 
 ### 2014-10-14

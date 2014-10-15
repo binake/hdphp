@@ -24,15 +24,12 @@ $data = array();
 $upload = new upload(Q('upload_dir'), array(), Q('fileSizeLimit'));
 $file = $upload->upload();
 if ($file) {
-    $file = $file[0];
+    $data = $file[0];
     $data['status'] = 1;
-    $data['url'] = $file['url'];
-    $data['path'] = $file['path'];
-    $data['name'] = $file['filename'];
     //加水印
-    if ($file['image'] && Q('water')) {
+    if ($data['image'] && Q('water')) {
         $img = new Image();
-        $img->water($file['path']);
+        $img->water($data['path']);
     }
 } else {
     $data['status'] = 0;
