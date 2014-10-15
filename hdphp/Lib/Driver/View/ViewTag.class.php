@@ -173,18 +173,18 @@ class ViewTag
         $name = str_replace("[]", "", $_name);
         $id = "hd_uploadify_" . $name;
         //是否加水印
-        $water = isset($attr['water']) && $attr['water']=='true'?1:C("WATER_ON");
-        $waterbtn = isset($attr['waterbtn']) && $attr['waterbtn'] == 'false' ? 0 : 1;
+        $water = isset($attr['water']) && $attr['water']==1?1:C("WATER_ON");
+        $waterbtn = isset($attr['waterbtn']) && $attr['waterbtn'] == 1 ? 1 : 0;
         $width = isset($attr['width']) ? trim($attr['width'], "px") : "200"; //是否加水印
         $height = isset($attr['height']) ? trim($attr['height'], "px") : "150"; //是否加水印
         $size = isset($attr['size']) ? str_ireplace("MB", "", $attr['size']) . "MB" : "2MB"; //文件上传大小单位KB、MB、GB
         //允许上传文件类型
         if (isset($attr['type']) && !empty($attr['type'])) {
-            $_type = explode(";", str_replace(array(",", "*."), array(";", ""), $attr['type']));
-            foreach ($_type as $_type_k => $_type_t) {
-                $_type[$_type_k] = '*.' . $_type_t;
+            $allowUploadType = explode(',',$attr['type']);
+            foreach ($allowUploadType as $_type_k => $_type_t) {
+                $allowUploadType[$_type_k] = '*.' . $_type_t;
             }
-            $type = implode(";", $_type);
+            $type = implode(";", $allowUploadType);
         } else {
             $type = "*.gif;*.jpg;*.png;*.jpeg";
         }
@@ -192,7 +192,7 @@ class ViewTag
         //是否显示描述
         $alt = isset($attr['alt']) && $attr['alt'] == 'true' ? 1 : 0;
         //是上传文件大小等提示信息true是false不显示
-        $message = isset($attr['message']) && $attr['message']=='false'?0:1;
+        $message = isset($attr['message']) && $attr['message']==1?1:0;
         $limit = isset($attr['limit']) ? $attr['limit'] : "100"; //上传文件数量
         $thumb = isset($attr['thumb']) ? $attr['thumb'] : ''; //生成缩略图尺寸
         $data = isset($attr['data']) ? $attr['data'] : false; //编辑时的图片数据
@@ -285,7 +285,7 @@ class ViewTag
         hd_uploadify_options.input_type    ="' . $_input_type . '";
         hd_uploadify_options.elem_id    ="' . $_elem_id . '";
         hd_uploadify_options.success_msg    ="正在上传...";//上传成功提示文字
-        hd_uploadify_options.formData ={' . $post . 'water : "' . $water . '",fileSizeLimit:' . (intval($size) * 1024 * 1024) . ', someOtherKey:1,' . session_name() . ':"' . session_id() . '",upload_dir:"' . $upload_dir . '",hdphp_upload_thumb:"' . $thumb . '"};
+        hd_uploadify_options.formData ={' . $post .'type:"'.$type. '",water : "' . $water . '",fileSizeLimit:' . (intval($size) * 1024 * 1024) . ', someOtherKey:1,' . session_name() . ':"' . session_id() . '",upload_dir:"' . $upload_dir . '",hdphp_upload_thumb:"' . $thumb . '"};
         hd_uploadify_options.thumb_width =' . $width . ';
         hd_uploadify_options.thumb_height          =' . $height . ';
         hd_uploadify_options.uploadsSuccessNums = ' . $uploadsSuccessful . ';

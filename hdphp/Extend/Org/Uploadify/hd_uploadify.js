@@ -44,7 +44,6 @@ var hd_uploadify_options = {
             var allowUploadNums = file_upload_limit - this.queueData.uploadsSuccessful;//还可以上传的文件数
             alert("上传文件过大或者类型不允许");
         }
-
     },
     onUploadSuccess: function (file, data, response) {
         //上传失败
@@ -56,7 +55,7 @@ var hd_uploadify_options = {
         //上传失败时 成功上传的文件数量减1
         if (data.status == 0) {
             this.queueData.uploadsSuccessful--;
-            alert(data.msg);
+            alert(data.message);
             return;
         }
         //成功上传的文件数量

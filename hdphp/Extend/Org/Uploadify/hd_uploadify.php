@@ -11,7 +11,7 @@ if (!defined("HDPHP_PATH"))exit('No direct script access allowed');
 // |   License: http://www.apache.org/licenses/LICENSE-2.0
 // '-----------------------------------------------------------------------------------
 header("Content-Type: text/html; charset=utf-8");
-//删除图片 
+//删除图片
 if (ACTION == "hd_uploadify_del") {
     $files = array_filter(explode("@@", $_POST['file']));
     foreach ($files as $f) {
@@ -20,8 +20,14 @@ if (ACTION == "hd_uploadify_del") {
     echo 1;
     exit;
 }
-$data = array();
-$upload = new upload(Q('upload_dir'), array(), Q('fileSizeLimit'));
+//允许上传文件类型
+if(isset($_POST['type'])){
+    $type = str_replace('*.','',$_POST['type']);
+    $type=explode(';',$type);
+}else{
+    $type=array();
+}
+$upload = new upload(Q('upload_dir'), $type, Q('fileSizeLimit'));
 $file = $upload->upload();
 if ($file) {
     $data = $file[0];

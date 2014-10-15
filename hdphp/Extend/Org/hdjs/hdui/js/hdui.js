@@ -214,7 +214,7 @@ $.extend({
         if (opt.button_success || opt.button_cancel) {
             content_height -= 46;
         }
-        div += '<div class="content" style="height:' + content_height + 'px">';
+        div += '<div class="content" style="height:' + content_height + 'px;overflow:hidden;">';
         if (opt.message) {
             div += '<div class="hd-modal-message"><strong class="' + opt.type + '"></strong><span>' + opt.message + '</span></div>';
         } else {
