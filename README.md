@@ -67,6 +67,7 @@ HDPHP遵循Apache2开源协议发布。Apache Licence是著名的非盈利开源
 ### 2014-10-16
 1. 修复Uploaded上传文件失败时的提示为undefined
 2. 修复Ueditor图片上传失败问题
+3. uploadify上传插件默认显示文件信息
 
 ### 2014-10-15
 1. 修复Data::channelList类方法

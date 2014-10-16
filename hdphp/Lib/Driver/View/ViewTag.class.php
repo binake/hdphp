@@ -192,7 +192,7 @@ class ViewTag
         //是否显示描述
         $alt = isset($attr['alt']) && $attr['alt'] == 'true' ? 1 : 0;
         //是上传文件大小等提示信息true是false不显示
-        $message = isset($attr['message']) && $attr['message']==1?1:0;
+        $message = isset($attr['message']) && $attr['message']==0?0:1;
         $limit = isset($attr['limit']) ? $attr['limit'] : "100"; //上传文件数量
         $thumb = isset($attr['thumb']) ? $attr['thumb'] : ''; //生成缩略图尺寸
         $data = isset($attr['data']) ? $attr['data'] : false; //编辑时的图片数据
