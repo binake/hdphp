@@ -106,7 +106,7 @@ abstract class Hook
             if (!class_exists($name, false)) return false;
         }
         $obj = new $name;
-        $obj->$action($param);
+        if(method_exists($obj,$action)) $obj->$action($param);
         return true;
     }
 }

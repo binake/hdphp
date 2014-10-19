@@ -99,8 +99,7 @@ class SplitWord{
             $s = array();
             foreach($string as $k=>$v){
                 $k = string::removePunctuation($k);
-                // $k = preg_replace("/\w/i",'',$k);
-                if(empty($k) || mb_strlen($k,$source_charset)==1){
+                if(is_numeric($k) || empty($k) || mb_strlen($k,$source_charset)<2){
                     continue;
                 }
                 $s[$k]=$v;
