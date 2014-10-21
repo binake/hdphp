@@ -82,11 +82,15 @@ class SplitWord{
      */
     static public function splitWord($string, $source_charset = '', $target_charset = 'utf-8', $load_all = TRUE) {
         self::$splitword_path = HDPHP_EXTEND_PATH.'Org/SplitWord/';
+
         $charset = C("CHARSET");
         $source_charset = empty($source_charset) ? preg_replace("/utf8|utf-8/i", "utf-8", $charset) : $source_charset;
-        self::$addonDicFile = self::$splitword_path . self::$addonDicFile;
-        self::$mainDicFileZip = self::$splitword_path . self::$mainDicFileZip;
-        self::$mainDicFile = self::$splitword_path . self::$mainDicFile;
+        if(self::$addonDicFile=='words_addons.dic')
+            self::$addonDicFile = self::$splitword_path . self::$addonDicFile;
+        if(self::$mainDicFileZip=='base_dic_full.zip')
+            self::$mainDicFileZip = self::$splitword_path . self::$mainDicFileZip;
+        if(self::$mainDicFile=='base_dic_full.dic')
+            self::$mainDicFile = self::$splitword_path . self::$mainDicFile;
         self::SetSource($string, $source_charset, $target_charset);
         self::$isLoadAll = $load_all;
         if (file_exists(self::$mainDicFile))
@@ -227,7 +231,6 @@ class SplitWord{
             $dicWords = $maindic;
             self::$mainDicFile = $maindic;
         }
-
 //加载主词典（只打开）
         if (self::$isUnpacked) {
             self::$mainDicHand = fopen($dicWords, 'r');

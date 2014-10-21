@@ -170,7 +170,7 @@ class RelationModel extends Model
         //处理表关联
         foreach ($this->join as $table => $set) {
             //有无操作数据
-            if (empty($data[$table]) || !is_array($data[$table])) continue;
+//            if (empty($data[$table]) || !is_array($data[$table])) continue;
             //检测是否需要关联
             if (!$this->check_join($table)) continue;
             //验证关联定义
@@ -244,7 +244,7 @@ class RelationModel extends Model
         //处理表关联
         foreach ($this->join as $table => $set) {
             //有无操作数据
-            if (empty($data[$table]) || !is_array($data[$table])) continue;
+//            if (empty($data[$table]) || !is_array($data[$table])) continue;
             //检测是否需要关联
             if (!$this->check_join($table)) continue;
             //验证关联定义
