@@ -33,6 +33,8 @@ abstract class Controller
     public function __construct()
     {
         Hook::listen('CONTROLLER_START', $this->options);
+        //视图对象
+        $this->view = ViewFactory::factory();
         //子类如果存在auto方法，自动运行
         if (method_exists($this, "__init")) {
             $this->__init();
@@ -73,44 +75,6 @@ abstract class Controller
     }
 
     /**
-     * 获得模型对象与M()方法相同
-     * @access protected
-     * @param string $tableName 表名
-     * @param boolean $full 是否是全表名，如果为TRUE时系统不会自动添加表前缀
-     * @return Object
-     */
-    protected function model($tableName = null, $full = null)
-    {
-        //获得模型对象
-        return M($tableName, $full);
-    }
-
-    /**
-     * 获得扩展模型对象
-     * @access protected
-     * @param string $model 扩展模型名称
-     * @return Object
-     */
-    protected function kmodel($model)
-    {
-        //获得扩展模型对象
-        return K($model);
-    }
-
-    /**
-     * 获得视图对象
-     * @access private
-     * @return void
-     */
-    private function getViewObj()
-    {
-        if (is_null($this->view)) {
-            //获得视图驱动含hd模板引擎与smarty引擎
-            $this->view = ViewFactory::factory();
-        }
-    }
-
-    /**
      * 显示视图
      * @access protected
      * @param string $tplFile 模板文件
@@ -125,7 +89,6 @@ abstract class Controller
     protected function display($tplFile = null, $cacheTime = -1, $cachePath = null, $stat = false, $contentType = "text/html", $charset = "", $show = true)
     {
         Hook::listen("VIEW_START");
-        $this->getViewObj();
         //执行视图对象中的display同名方法
         $status = $this->view->display($tplFile, $cacheTime, $cachePath, $contentType, $charset, $show);
         Hook::listen("VIEW_END");
@@ -144,7 +107,6 @@ abstract class Controller
      */
     protected function fetch($tplFile = null, $cacheTime = null, $cachePath = null, $contentType = "text/html", $charset = "", $show = true)
     {
-        $this->getViewObj();
         return $this->view->fetch($tplFile, $cacheTime, $cachePath, $contentType, $charset);
     }
 
@@ -156,7 +118,6 @@ abstract class Controller
      */
     protected function isCache($cachePath = null)
     {
-        $this->getViewObj();
         $args=func_get_args();
         return call_user_func_array(array($this->view, "isCache"), $args);
     }
@@ -170,7 +131,6 @@ abstract class Controller
      */
     protected function assign($name, $value = null)
     {
-        $this->getViewObj();
         return $this->view->assign($name, $value);
     }
 
