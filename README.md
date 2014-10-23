@@ -65,6 +65,7 @@ HDPHP遵循Apache2开源协议发布。Apache Licence是著名的非盈利开源
 # 更新日志 #
 ### 2014-10-20
 1. 修复中文分词Tag词典路径错误
+2. 优化Controller.class.php类
 
 ### 2014-10-19
 1. 修复Hook当钓子方法不存在时报错的问题
