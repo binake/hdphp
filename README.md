@@ -63,6 +63,10 @@ HDPHP遵循Apache2开源协议发布。Apache Licence是著名的非盈利开源
 ----
 
 # 更新日志 #
+### 2014-10-28
+1. 修复upload设置water属性为0失败的问题
+2. 增加ViewModel多表关联可以设置表别名_as
+
 ### 2014-10-27
 1. 修复success与error方法指定模板失败问题
 

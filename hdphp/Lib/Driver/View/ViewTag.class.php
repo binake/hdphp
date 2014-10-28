@@ -173,7 +173,7 @@ class ViewTag
         $name = str_replace("[]", "", $_name);
         $id = "hd_uploadify_" . $name;
         //是否加水印
-        $water = isset($attr['water']) && $attr['water']==1?1:C("WATER_ON");
+        $water = isset($attr['water']) && $attr['water']==1?1:0;
         $waterbtn = isset($attr['waterbtn']) && $attr['waterbtn'] == 1 ? 1 : 0;
         $width = isset($attr['width']) ? trim($attr['width'], "px") : "200"; //是否加水印
         $height = isset($attr['height']) ? trim($attr['height'], "px") : "150"; //是否加水印
@@ -197,18 +197,18 @@ class ViewTag
         $thumb = isset($attr['thumb']) ? $attr['thumb'] : ''; //生成缩略图尺寸
         $data = isset($attr['data']) ? $attr['data'] : false; //编辑时的图片数据
         //过滤非法数据，用于编辑显示使用
-        if ($data) {
-            $varName = preg_replace('/[\{\}\$]/', '', $attr['data']);
-            if (isset($view->vars[$varName])) {
-                $imgData = $view->vars[$varName];
-                foreach ($imgData as $k => $_img) {
-                    if (empty($_img['path'])) {
-                        //删除path为空的图片元素
-                        unset($view->vars[$varName][$k]);
-                    }
-                }
-            }
-        }
+        // if ($data) {
+        //     $varName = preg_replace('/[\{\}\$]/', '', $attr['data']);
+        //     if (isset($view->vars[$varName])) {
+        //         $imgData = $view->vars[$varName];
+        //         foreach ($imgData as $k => $_img) {
+        //             if (empty($_img['path'])) {
+        //                 //删除path为空的图片元素
+        //                 unset($view->vars[$varName][$k]);
+        //             }
+        //         }
+        //     }
+        // }
         //设置上传成功的图片数，上传时0，编辑时统计图片数据
         if ($data && isset($view->vars[$data])) {
             //编辑时统计图片数量
@@ -220,12 +220,16 @@ class ViewTag
         //编辑视图时显示缩略图片
         $uploadFileStr = '';
         if ($data) {
-            $uploadFileStr .= '<?php
+            $uploadFileStr .= "<?php
+            \$_uploadImageData=$data;";
+            $uploadFileStr.='
             $_uploadStr="";//编译文件需要的PHP字符串表示
             $upFileId=0;//第几张图片
-            if(!empty($this->vars["' . $varName . '"])){
+            if(!empty($_uploadImageData)){
             //读取图片数据
-            foreach ($this->vars["' . $varName . '"] as $f) {
+            foreach ($_uploadImageData as $f) {
+                //图片不存在
+                if(empty($f["path"]) || !is_file($f["path"]))continue;
                 $upFileId++;
                 $url = \'__ROOT__/\' . $f["path"];
         $_uploadStr.="<li><div class=\'delUploadFile\'></div>";

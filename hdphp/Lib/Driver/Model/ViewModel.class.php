@@ -31,31 +31,38 @@ class ViewModel extends Model
     //查询
     public function select($data = array())
     {
-        $from = '';
-        foreach ($this->view as $table => $set) {
-            if(!empty($this->joinTable) && !in_array($table,$this->joinTable))continue;
-            $from .= C('DB_PREFIX') . $table . ' ' . $table;
-            //字段
-            foreach ($set as $name => $f) {
-                if ($name !== '_type' && $name !== '_on') {
-                    $field = is_string($name) ? array($table . '.' . $name => $f) : $f;
-                    $this->field($field);
+        if(!empty($this->view)){
+            $from = '';
+            foreach ($this->view as $table => $set) {
+                //关联指定表
+                if(!empty($this->joinTable) && !in_array($table,$this->joinTable))continue;
+                //表别名
+                $as = isset($set['_as'])?$set['_as']:$table;
+                //FROM部分
+                $from .= C('DB_PREFIX') . $table . ' ' . $as;
+                //关联方式
+                if (isset($set['_on'])) {
+                    $on = preg_replace('@__(\w+)__@', '\1', $set['_on']);
+                    $from .= " ON $on ";
+                }
+                //_TYPE关联方式
+                if (isset($set['_type'])) {
+                    $from .= ' '.strtoupper($set['_type']).' JOIN ';
+                }
+                //字段
+                foreach ($set as $name => $f) {
+                    if (!in_array($name,array('_type','_on','_as'))){
+                        $field = is_string($name) ? array($as . '.' . $name => $f) : $f;
+                        $this->field($field);
+                    }
                 }
             }
-            if (isset($set['_on'])) {
-                $on = preg_replace('@__(\w+)__@', '\1', $set['_on']);
-                $from .= " ON $on ";
-            }
-            //_TYPE关联方式
-            if (isset($set['_type'])) {
-                $from .= ' '.strtoupper($set['_type']).' JOIN ';
-            }
+            if(substr($from,-11)=='INNER JOIN ')$from=substr($from,0,-11);
+            if(substr($from,-11)=='RIGHT JOIN ')$from=substr($from,0,-11);
+            if(substr($from,-10)=='LEFT JOIN ')$from=substr($from,0,-10);
+            $this->db->opt['table'] = $from;
+            $this->joinTable = array();
         }
-        if(substr($from,-11)=='INNER JOIN ')$from=substr($from,0,-11);
-        if(substr($from,-11)=='RIGHT JOIN ')$from=substr($from,0,-11);
-        if(substr($from,-10)=='LEFT JOIN ')$from=substr($from,0,-10);
-        $this->db->opt['table'] = $from;
-        $this->joinTable = array();
         return parent::select($data);
     }
 }
