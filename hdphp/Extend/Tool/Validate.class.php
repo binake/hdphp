@@ -24,7 +24,7 @@ class Validate
     //不能为空
     public function _nonull($name, $value, $msg)
     {
-        if (empty($value) && $value !== 0) {
+        if (empty($value)) {
             return $msg;
         }
         return true;

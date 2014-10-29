@@ -68,7 +68,7 @@ final class DbFactory
     private function getDriver($driver, $tableName)
     {
         $class = "Db" . $driver; //数据库驱动
-        $classFile = HDPHP_DRIVER_PATH . 'Db/Driver/' . $class . '.Tool.php'; //加载驱动类库文件
+        $classFile = HDPHP_DRIVER_PATH . 'Db/Driver/' . $class . '.Class.php'; //加载驱动类库文件
         require_cache($classFile);
         $this->driverList[$tableName] = new $class;
         $table = $tableName == 'empty' ? null : $tableName;

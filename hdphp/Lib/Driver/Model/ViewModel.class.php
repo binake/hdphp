@@ -57,17 +57,20 @@ class ViewModel extends Model
                  */
                 if (empty($this->db->opt['field'])) {
                     foreach ($set as $name => $f) {
-                        if (!is_string($name) || !in_array($name, array('_type', '_on', '_as'))) {
-                            $fieldStr = is_string($name) ? $as . '.' . $name.' AS '. $f: $f;
-                            $field.=$fieldStr.",";
-
+                        /**
+                         * 特定关键词不处理
+                         */
+                        if (is_string($name) && in_array($name, array('_type', '_on', '_as'))) {
+                            continue;
                         }
+                        $fieldStr = is_string($name) ? $as . '.' . $name . ' AS ' . $f : $f;
+                        $field .= $fieldStr . ",";
                     }
                 }
             }
             //设置字段
-            if($field){
-                $this->field('*,'.substr($field,0,-1));
+            if ($field) {
+                $this->field('*,' . substr($field, 0, -1));
             }
             if (substr($from, -11) == 'INNER JOIN ') $from = substr($from, 0, -11);
             if (substr($from, -11) == 'RIGHT JOIN ') $from = substr($from, 0, -11);

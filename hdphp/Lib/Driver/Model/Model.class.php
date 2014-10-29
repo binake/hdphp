@@ -62,9 +62,10 @@ class Model
             $this->db = $db;
         } else { //连接异常
             if (DEBUG) {
-                error("数据库连接错误", false);
+                halt("数据库连接错误");
             } else {
                 Log::write("数据库连接错误");
+                return false;
             }
         }
     }
