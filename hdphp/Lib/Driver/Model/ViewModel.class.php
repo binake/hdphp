@@ -20,6 +20,7 @@ class ViewModel extends Model
 {
     public $view = array();
     public $joinTable = array();
+
     //设置关联表
     public function relation($joinTable = array())
     {
@@ -28,16 +29,17 @@ class ViewModel extends Model
         }
         return $this;
     }
+
     //查询
     public function select($data = array())
     {
-        if(!empty($this->view)){
-            $from = '';
+        if (!empty($this->view)) {
+            $from = $field = '';
             foreach ($this->view as $table => $set) {
                 //关联指定表
-                if(!empty($this->joinTable) && !in_array($table,$this->joinTable))continue;
+                if (!empty($this->joinTable) && !in_array($table, $this->joinTable)) continue;
                 //表别名
-                $as = isset($set['_as'])?$set['_as']:$table;
+                $as = isset($set['_as']) ? $set['_as'] : $table;
                 //FROM部分
                 $from .= C('DB_PREFIX') . $table . ' ' . $as;
                 //关联方式
@@ -47,19 +49,29 @@ class ViewModel extends Model
                 }
                 //_TYPE关联方式
                 if (isset($set['_type'])) {
-                    $from .= ' '.strtoupper($set['_type']).' JOIN ';
+                    $from .= ' ' . strtoupper($set['_type']) . ' JOIN ';
                 }
-                //字段
-                foreach ($set as $name => $f) {
-                    if (!in_array($name,array('_type','_on','_as'))){
-                        $field = is_string($name) ? array($as . '.' . $name => $f) : $f;
-                        $this->field($field);
+                /**
+                 * 字段设置
+                 * 如果链式操作中调用了field()方法,则不执行以下操作
+                 */
+                if (empty($this->db->opt['field'])) {
+                    foreach ($set as $name => $f) {
+                        if (!is_string($name) || !in_array($name, array('_type', '_on', '_as'))) {
+                            $fieldStr = is_string($name) ? $as . '.' . $name.' AS '. $f: $f;
+                            $field.=$fieldStr.",";
+
+                        }
                     }
                 }
             }
-            if(substr($from,-11)=='INNER JOIN ')$from=substr($from,0,-11);
-            if(substr($from,-11)=='RIGHT JOIN ')$from=substr($from,0,-11);
-            if(substr($from,-10)=='LEFT JOIN ')$from=substr($from,0,-10);
+            //设置字段
+            if($field){
+                $this->field('*,'.substr($field,0,-1));
+            }
+            if (substr($from, -11) == 'INNER JOIN ') $from = substr($from, 0, -11);
+            if (substr($from, -11) == 'RIGHT JOIN ') $from = substr($from, 0, -11);
+            if (substr($from, -10) == 'LEFT JOIN ') $from = substr($from, 0, -10);
             $this->db->opt['table'] = $from;
             $this->joinTable = array();
         }

@@ -135,7 +135,7 @@ abstract class Db implements DbInterface
         $opt = array(
             'table' => $this->table,
             'pri' => $this->pri,
-            'field' => '*',
+            'field' => '',
             'fieldData' => $this->fieldData,
             'where' => '',
             'like' => '',
@@ -160,6 +160,10 @@ abstract class Db implements DbInterface
         $where && $this->where($where);
         //去除WHERE尾部AND OR
         $this->parseWhereLogic($this->opt['where']);
+        //设置字段
+        if(empty($this->opt['field'])){
+            $this->opt['field']=' * ';
+        }
         $sql = 'SELECT ' . $this->opt['field'] . ' FROM ' . $this->opt['table'] .
             $this->opt['where'] . $this->opt['group'] . $this->opt['having'] .
             $this->opt['order'] . $this->opt['limit'];
@@ -396,7 +400,7 @@ abstract class Db implements DbInterface
                 }
             }
         }
-        $field = trim($this->opt['field']) == '*' ? '' : $this->opt['field'] . ',';
+        $field = empty($this->opt['field'])? '' : $this->opt['field'] . ',';
         foreach ($data as $name => $d) {
             if (is_string($name)) {
                 $field .= $name . ' AS ' . $d . ",";
