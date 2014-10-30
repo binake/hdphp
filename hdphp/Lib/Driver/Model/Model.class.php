@@ -202,7 +202,7 @@ class Model
         $this->data($data);
         //当前方法
         $current_method = $this->getCurrentMethod();
-        $_data = & $this->data;
+        $_data = &$this->data;
         if (!is_array($this->validate) || empty($this->validate)) {
             return true;
         }
@@ -281,7 +281,7 @@ class Model
     public function auto($data = array())
     {
         $this->data($data);
-        $_data = & $this->data;
+        $_data = &$this->data;
         $motion = $this->getCurrentMethod();
         foreach ($this->auto as $v) {
             //1 插入时处理  2 更新时处理  3 插入与更新都处理
@@ -699,16 +699,12 @@ class Model
 
     /**
      * 删除表
-     * @param string $tableName 表名
+     * @param string $table 表名
      * @return mixed
      */
-    public function dropTable($tableName)
+    public function dropTable($table)
     {
-        if ($this->tableExists($tableName)) {
-            return $this->exe("DROP TABLE IF EXISTS `" . C('DB_PREFIX') . $tableName . "`");
-        } else {
-            return false;
-        }
+        return $this->exe("DROP TABLE IF EXISTS `" . C('DB_PREFIX') . $table . "`");
     }
 
     /**
@@ -850,30 +846,21 @@ class Model
     }
 
     //获得数据库或表大小
-    public function getSize($table = '')
+    public function getSize($table)
     {
-        if (empty($table))
-            $table = array($this->tableFull);
-        if (is_string($table))
-            $table = array($table);
         return $this->db->getSize($table);
     }
 
-    //获得表信息
-    public function getTableInfo($table = array())
+    //获得所有表信息
+    public function getAllTableInfo()
     {
-        return $this->db->getTableInfo($table);
+        return $this->db->getTableInfo();
     }
 
     //清空表
     public function truncate($table)
     {
-        if (is_array($table) && !empty($table)) {
-            foreach ($table as $t) {
-                $this->exe("TRUNCATE TABLE `" . $t . "`");
-            }
-            return true;
-        }
+        return $this->exe("TRUNCATE TABLE `" . C('DB_PREFIX') . $table . "`");
     }
 
     /**
@@ -883,49 +870,28 @@ class Model
      */
     public function optimize($table)
     {
-        if (is_array($table) && !empty($table)) {
-            foreach ($table as $t) {
-                $this->exe("OPTIMIZE TABLE `" . $t . "`");
-            }
-            return true;
-        }
+        $this->exe("OPTIMIZE TABLE `" . C('DB_PREFIX') . $table . "`");
     }
 
     //修复数据表
     public function repair($table)
     {
-        if (is_array($table) && !empty($table)) {
-            foreach ($table as $t) {
-                $this->exe("REPAIR TABLE `" . $t . "`");
-            }
-            return true;
-        }
+        return $this->exe("REPAIR TABLE `" . C('DB_PREFIX') . $table . "`");
     }
 
     //修改表名
     public function rename($old, $new)
     {
-        $this->exe("ALTER TABLE `" . $old . "` RENAME " . $new);
+        $this->exe("ALTER TABLE `" . C('DB_PREFIX') . $old . "` RENAME " . C('DB_PREFIX') . $new);
     }
 
     /**
-     * 开启|关闭事务
-     * @param bool $stat true开启事务| false关闭事务
+     * 开启事务
      * @return mixed
      */
-    public function beginTrans($stat = true)
+    public function beginTrans()
     {
-        return $this->db->beginTrans($stat);
-    }
-
-    /**
-     * 执行SQL语句
-     * @param void 传入SQL字符串
-     * @return type
-     */
-    public function runSql($sql)
-    {
-        return $this->exe($sql);
+        return $this->db->beginTrans();
     }
 
     //提供一个事务

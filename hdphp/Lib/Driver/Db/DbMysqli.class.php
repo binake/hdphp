@@ -140,20 +140,21 @@ class DbMysqli extends Db
     //自动提交模式true开启false关闭
     public function beginTrans()
     {
-        $stat = func_get_arg(0);
-        $this->link->autocommit(!$stat);
+        $this->link->autocommit(0);
     }
 
     //提供一个事务
     public function commit()
     {
         $this->link->commit();
+        $this->link->autocommit(1);
     }
 
     //回滚事务
     public function rollback()
     {
         $this->link->rollback();
+        $this->link->autocommit(1);
     }
 
     // 释放连接资源

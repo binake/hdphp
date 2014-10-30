@@ -161,8 +161,8 @@ abstract class Db implements DbInterface
         //去除WHERE尾部AND OR
         $this->parseWhereLogic($this->opt['where']);
         //设置字段
-        if(empty($this->opt['field'])){
-            $this->opt['field']=' * ';
+        if (empty($this->opt['field'])) {
+            $this->opt['field'] = ' * ';
         }
         $sql = 'SELECT ' . $this->opt['field'] . ' FROM ' . $this->opt['table'] .
             $this->opt['where'] . $this->opt['group'] . $this->opt['having'] .
@@ -242,7 +242,7 @@ abstract class Db implements DbInterface
             if ($this->isField($k)) {
                 $data['fields'][] = "`" . $k . "`";
                 $v = $this->escapeString($v);
-                $data['values'][] =is_numeric($v)?$v:"\"$v\"";
+                $data['values'][] = is_numeric($v) ? $v : "\"$v\"";
             }
         }
         return $data;
@@ -400,7 +400,7 @@ abstract class Db implements DbInterface
                 }
             }
         }
-        $field = empty($this->opt['field'])? '' : $this->opt['field'] . ',';
+        $field = empty($this->opt['field']) ? '' : $this->opt['field'] . ',';
         foreach ($data as $name => $d) {
             if (is_string($name)) {
                 $field .= $name . ' AS ' . $d . ",";
@@ -528,23 +528,16 @@ abstract class Db implements DbInterface
     }
 
     /**
-     * 获得表信息
-     * @param   string $table 数据库名
+     * 获得所有表信息
      * @return  array
      */
-    public function getTableInfo($table)
+    public function getAllTableInfo()
     {
-        $table = empty($table) ? null : $table; //表名
         $info = $this->query("SHOW TABLE STATUS FROM " . C("DB_DATABASE"));
         $arr = array();
         $arr['total_size'] = 0; //总大小
         $arr['total_row'] = 0; //总条数
         foreach ($info as $k => $t) {
-            if ($table) {
-                if (!in_array($t['Name'], $table)) {
-                    continue;
-                }
-            }
             $arr['table'][$t['Name']]['tablename'] = $t['Name'];
             $arr['table'][$t['Name']]['engine'] = $t['Engine'];
             $arr['table'][$t['Name']]['rows'] = $t['Rows'];
@@ -561,7 +554,7 @@ abstract class Db implements DbInterface
             $arr['total_size'] += $arr['table'][$t['Name']]['size'];
             $arr['total_row']++;
         }
-        return empty($arr) ? false : $arr;
+        return $arr;
     }
 
     /**
@@ -569,14 +562,15 @@ abstract class Db implements DbInterface
      */
     public function getSize($table)
     {
+        $table = C('DB_PREFIX') . $table;
         $sql = "show table status from " . C("DB_DATABASE");
         $row = $this->query($sql);
         $size = 0;
         foreach ($row as $v) {
-            if ($table) {
-                $size += in_array(strtolower($v['Name']), $table) ? $v['Data_length'] + $v['Index_length'] : 0;
+            if (in_array(strtolower($v['Name']), $table)) {
+                $size = $v['Data_length'] + $v['Index_length'];
             }
         }
-        return get_size($size);
+        return $size;
     }
 }

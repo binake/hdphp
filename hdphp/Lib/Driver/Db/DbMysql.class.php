@@ -154,12 +154,14 @@ class DbMysql extends Db
     public function commit()
     {
         mysql_query("COMMIT", $this->link);
+        mysql_query("START AUTOCOMMIT=1");
     }
 
     //回滚事务
     public function rollback()
     {
         mysql_query("ROLLBACK", $this->link);
+        mysql_query("START AUTOCOMMIT=1");
     }
 
     // 释放连接资源
