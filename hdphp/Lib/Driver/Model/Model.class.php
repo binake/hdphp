@@ -854,7 +854,7 @@ class Model
     //获得所有表信息
     public function getAllTableInfo()
     {
-        return $this->db->getTableInfo();
+        return $this->db->getAllTableInfo();
     }
 
     //清空表

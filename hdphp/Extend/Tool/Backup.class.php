@@ -21,9 +21,8 @@ final class Backup
     private static $config;
     //备份目录
     private static $dir;
-    //错误记录
-    public static $error;
 
+    //构造函数
     public function __construct()
     {
 
@@ -32,7 +31,7 @@ final class Backup
     //还原数据
     static public function recovery($option)
     {
-        if(!Q('status')) F('backupDir',null);
+        if (!Q('status')) F('backupDir', null);
         if (!F('backupDir')) {
             F('backupDir', $option['dir']);
         }
@@ -40,11 +39,7 @@ final class Backup
         //检测目录是否存在
         if (!is_dir($dir)) {
             F('backupDir', null);
-            self::$error = '数据目录不存在';
-            if (DEBUG) {
-                halt(self::$error);
-            }
-            return false;
+            halt('备份目录不存在');
         }
         self::$config = require($dir . '/config.php');
         //文件id
@@ -58,14 +53,14 @@ final class Backup
             if (is_file($dir . '/structure.php')) {
                 require $dir . '/structure.php';
             }
-            $url = U(ACTION, array('bid' => 1,'status'=>'run'));
+            $url = U(ACTION, array('bid' => 1, 'status' => 'run'));
             return array('status' => 'run', 'message' => '还原数据初始化...', 'url' => $url);
         }
         foreach (glob($dir . '/*') as $d) {
             if (preg_match("@_bk_{$fid}.php$@i", $d)) {
                 require $d;
                 $_GET['bid'] += 1;
-                $url = U(ACTION, array('bid' => $_GET['bid'],'status'=>'run'));
+                $url = U(ACTION, array('bid' => $_GET['bid'], 'status' => 'run'));
                 return array('status' => 'run', 'message' => "分卷{$fid}还原完毕!", 'url' => $url);
             }
         }
@@ -75,25 +70,34 @@ final class Backup
     //备份数据表
     static public function backup($config = array())
     {
-        if(!Q("get.status"))F('backupDir',null);
+        //首次执行时没有备份状态
+        if (!Q("get.status")) F('backupDir', null);
+        //获取备份目录
         $backupDir = F('backupDir');
         //2+备份时
-        if (Q("get.status") && is_dir($backupDir)) {
+        if (Q("get.status")) {
+            if(!is_dir($backupDir) && is_writable($backupDir)){
+                halt('备份目录'.$backupDir.'不存在或不可写');
+            }
             self::$dir = $backupDir;
             self::$config = require(self::$dir . '/config.php');
             return self::backup_data();
         } else {
             //首次执行时创建配置文件
             self::$dir = isset($config['dir']) ? $config['dir'] : C('DB_BACKUP');
+            //缓存备份目录
             F('backupDir', self::$dir);
-            self::init($config);
+            //创建备份配置文件与目录
+            if (!self::init($config)) {
+                halt('备份初始化失败');
+            }
             //是否备份表结构
             $structure = isset($config['structure']) ? $config['structure'] : TRUE;
             if ($structure) {
                 self::backup_structure();
             }
             //记录备份目录
-            $url = U(ACTION, array('status' => 1));
+            $url = U(ACTION, array('status' => 'run'));
             return array('status' => 'run', 'message' => '正在进行备份初始化...', 'url' => $url);
         }
     }
@@ -118,14 +122,15 @@ final class Backup
     {
         foreach (self::$config as $table => $config) {
             //已经备份过的表忽略
-            if ($config['success'])
+            if ($config['success']){
                 continue;
+            }
             //当前备份行
             $current_row = $config['current_row'];
             C('DB_DATABASE', $config['database']);
             $db = M($table, TRUE);
             //字段缓存
-            $fieldCache = F(C('DB_DATABASE').'.'.$table, false, APP_TABLE_PATH);
+            $fieldCache = F(C('DB_DATABASE') . '.' . $table, false, APP_TABLE_PATH);
             $backup_str = "";
             do {
                 $data = $db->limit("$current_row,20")->select();
@@ -140,8 +145,8 @@ final class Backup
                         $field = $value = array();
                         foreach ($d as $f => $v) {
                             $field[] = $f;
-                            $v=addslashes($v);
-                            $value[]= preg_match('@int@i', $fieldCache[$f]['type']) ? intval($v) : "'$v'";
+                            $v = addslashes($v);
+                            $value[] = preg_match('@int@i', $fieldCache[$f]['type']) ? intval($v) : "'$v'";
                         }
                         //表名
                         $table_name = "\".\$db_prefix.\"" . str_ireplace(C("DB_PREFIX"), "", $table);
@@ -187,19 +192,20 @@ final class Backup
     {
         //创建备份目录
         is_dir(self::$dir) or Dir::create(self::$dir);
+        //检测目录
+        if (!is_dir(self::$dir)) {
+            return false;
+        }
+        //所有表信息
+        $tableInfo = M()->getAllTableInfo();
         self::$config = array();
         //没有设置表时，备份当前库所有表
         if (empty($config['table'])) {
-            $info = M()->getTableInfo();
             $config['table'] = array();
-            if (empty($info['table'])) {
-                if (DEBUG) {
-                    halt('数据库中没有任何表用于备份');
-                } else {
-                    return false;
-                }
+            if (empty($tableInfo['table'])) {
+                return false;
             }
-            foreach ($info['table'] as $t => $v) {
+            foreach ($tableInfo['table'] as $t => $v) {
                 $config['table'][] = $t;
             }
         }
@@ -212,10 +218,9 @@ final class Backup
         //数据库
         $config['database'] = isset($config['database']) ? $config['database'] : C('DB_DATABASE');
         foreach ($config['table'] as $table) {
-            $info = M()->getTableInfo(array($table));
             self::$config[$table] = array();
             //共有行数
-            self::$config[$table]["row"] = $info['table'][$table]['rows'];
+            self::$config[$table]["row"] = $tableInfo['table'][$table]['rows'];
             //是否已经备份成功
             self::$config[$table]['success'] = false;
             //当前备份行
@@ -225,7 +230,7 @@ final class Backup
             self::$config[$table]['step_time'] = isset($config['step_time']) ? $config['step_time'] * 1000 : 200;
             self::$config[$table]['database'] = $config['database'];
         }
-        self::update_config_file();
+        return self::update_config_file();
     }
 
     //修改配置文件
@@ -233,6 +238,6 @@ final class Backup
     {
         //写入配置文件
         $s = "<?php if(!defined('HDPHP_PATH'))exit;\nreturn " . var_export(self::$config, true) . ";\n?>";
-        file_put_contents(self::$dir . '/config.php', $s);
+        return file_put_contents(self::$dir . '/config.php', $s);
     }
 }
