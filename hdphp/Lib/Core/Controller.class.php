@@ -24,7 +24,10 @@ abstract class Controller
      * @access private
      */
     protected $view = null;
-    //事件参数
+    /**
+     * 事件参数
+     * @var array
+     */
     protected $options = array();
 
     /**
@@ -78,7 +81,7 @@ abstract class Controller
      * 显示视图
      * @access protected
      * @param string $tplFile 模板文件
-     * @param null $cacheTime 缓存时间
+     * @param int $cacheTime 缓存时间
      * @param string $cachePath 缓存目录
      * @param bool $stat 是否返回解析结果
      * @param string $contentType 文件类型
@@ -118,7 +121,7 @@ abstract class Controller
      */
     protected function isCache($cachePath = null)
     {
-        $args=func_get_args();
+        $args = func_get_args();
         return call_user_func_array(array($this->view, "isCache"), $args);
     }
 
@@ -146,7 +149,7 @@ abstract class Controller
         if (IS_AJAX) {
             $this->ajax(array('status' => 0, 'message' => $message));
         } else {
-            $url = $url ? "window.location.href='" . U($url) . "'" : "window.location.href='".__HISTORY__."'";
+            $url = $url ? "window.location.href='" . U($url) . "'" : "window.location.href='" . __HISTORY__ . "'";
             $tpl = $tpl ? $tpl : (strstr(C("TPL_ERROR"), '/') ? C("TPL_ERROR") : MODULE_PUBLIC_PATH . C("TPL_ERROR"));
             $this->assign(array("message" => $message, 'url' => $url, 'time' => $time));
             $this->display($tpl);
@@ -166,7 +169,7 @@ abstract class Controller
         if (IS_AJAX) {
             $this->ajax(array('status' => 1, 'message' => $message));
         } else {
-            $url = $url ? "window.location.href='" . U($url) . "'" : "window.location.href='".__HISTORY__."'";
+            $url = $url ? "window.location.href='" . U($url) . "'" : "window.location.href='" . __HISTORY__ . "'";
             $tpl = $tpl ? $tpl : (strstr(C("TPL_SUCCESS"), '/') ? C("TPL_SUCCESS") : MODULE_PUBLIC_PATH . C("TPL_SUCCESS"));
             $this->assign(array("message" => $message, 'url' => $url, 'time' => $time));
             $this->display($tpl);
@@ -201,23 +204,23 @@ abstract class Controller
 
     /**
      * 生成静态
-     * @param string $htmlfile 文件名
-     * @param string $htmlpath 目录
+     * @param string $htmlFile 文件名
+     * @param string $htmlPath 目录
      * @param string $template 模板文件
      */
-    public function createHtml($htmlfile, $htmlpath = '', $template = '')
+    public function createHtml($htmlFile, $htmlPath, $template)
     {
         $content = $this->fetch($template);
-        $htmlpath = empty($htmlpath) ? C('HTML_PATH') : $htmlpath;
-        $file = $htmlpath . $htmlfile;
+        $file = $htmlPath . $htmlFile;
         $Storage = Storage::init();
         return $Storage->save($file, $content);
     }
 
-    //析构函数
+    /**
+     * 析构函数
+     */
     public function __destruct()
     {
         Hook::listen('CONTROLLER_END', $this->options);
     }
-
 }

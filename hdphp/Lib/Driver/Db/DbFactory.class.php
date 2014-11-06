@@ -35,26 +35,28 @@ final class DbFactory
 
     /**
      * 返回工厂实例，单例模式
+     * @param $driver 连接驱动
+     * @param $table 表
+     * @param bool $full 加表前缀
+     * @return bool
      */
-    public static function factory($driver = null, $tableName = null)
+    public static function factory($driver, $table, $full)
     {
         //只实例化一个对象
         if (is_null(self::$dbFactory)) {
             self::$dbFactory = new dbFactory();
         }
         if (is_null($driver)) {
-            $driver = ucfirst(strtolower(C("DB_DRIVER")));
+            $driver = ucfirst(C("DB_DRIVER"));
         }
-        if (is_null($tableName)) {
-            $tableName = 'empty';
-        }
+
         //数据库驱动存在并且数据库连接正常
-        if (isset(self::$dbFactory->driverList[$tableName]) && self::$dbFactory->driverList[$tableName]->link) {
-            return self::$dbFactory->driverList[$tableName];
+        if (isset(self::$dbFactory->driverList[$table]) && self::$dbFactory->driverList[$table]->link) {
+            return self::$dbFactory->driverList[$table];
         }
         //获得数据库驱动
-        if (self::$dbFactory->getDriver($driver, $tableName)) {
-            return self::$dbFactory->driverList[$tableName];
+        if (self::$dbFactory->getDriver($driver, $table, $full)) {
+            return self::$dbFactory->driverList[$table];
         } else {
             return false;
         }
@@ -62,17 +64,16 @@ final class DbFactory
 
     /**
      * 获得数据库驱动接口
-     * @param $driver 驱动
-     * @param $tableName 表名
+     * @param string $driver 驱动
+     * @param string $table 数据表
+     * @param bool $full 全表名
+     * @return mixed
      */
-    private function getDriver($driver, $tableName)
+    private function getDriver($driver, $table, $full)
     {
         $class = "Db" . $driver; //数据库驱动
-        $classFile = HDPHP_DRIVER_PATH . 'Db/Driver/' . $class . '.Class.php'; //加载驱动类库文件
-        require_cache($classFile);
-        $this->driverList[$tableName] = new $class;
-        $table = $tableName == 'empty' ? null : $tableName;
-        return $this->driverList[$tableName]->connect($table);
+        $this->driverList[$table] = new $class;
+        return $this->driverList[$table]->link($table, $full);
     }
 
     /**

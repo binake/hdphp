@@ -64,9 +64,9 @@ class CacheFile extends Cache
     /**
      * 设置缓存
      * @access public
-     * @param string $name  缓存名称
-     * @param void $data    缓存数据
-     * @param void $expire  缓存时间
+     * @param string $name 缓存名称
+     * @param void $data 缓存数据
+     * @param void $expire 缓存时间
      * @return boolean
      */
     public function set($name, $data, $expire = null)
@@ -82,6 +82,8 @@ class CacheFile extends Cache
         }
         //缓存时间
         $expire = sprintf("%010d", !is_null($expire) ? (int)$expire : $this->options['expire']);
+        //缓存时间小于0为不缓存
+        if ($expire < 0) return false;
         //缓存目录失效
         if (!$this->isConnect) {
             $this->createDir();
@@ -98,10 +100,10 @@ class CacheFile extends Cache
                 //队列处理
                 $this->queue($name);
             }
-            $this->record(1,1);
+            $this->record(1, 1);
             return true;
         } else {
-            $this->record(1,0);
+            $this->record(1, 0);
             return false;
         }
     }
@@ -117,12 +119,12 @@ class CacheFile extends Cache
         $cacheFile = $this->getCacheFile($name);
         //缓存文件不存在
         if (!is_file($cacheFile)) {
-            $this->record(2,0);
+            $this->record(2, 0);
             return null;
         }
         $content = @file_get_contents($cacheFile);
         if (!$content) {
-            $this->record(2,0);
+            $this->record(2, 0);
             return null;
         }
         $expire = intval(substr($content, 8, 10));
@@ -131,21 +133,21 @@ class CacheFile extends Cache
         //缓存失效处理
         if ($expire > 0 && $mtime + $expire < time()) {
             @unlink($cacheFile);
-            $this->record(2,0);
+            $this->record(2, 0);
             return false;
         }
         $data = substr($content, 18, -3);
         if ($this->options['zip'] && function_exists("gzuncompress")) {
             $data = gzuncompress($data);
         }
-        $this->record(2,1);
+        $this->record(2, 1);
         return unserialize($data);
     }
 
     /**
      * 删除缓存
      * @access public
-     * @param type $name  缓存KEY
+     * @param type $name 缓存KEY
      * @return type
      */
     public function del($name)

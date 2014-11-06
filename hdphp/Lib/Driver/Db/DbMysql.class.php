@@ -23,14 +23,14 @@ class DbMysql extends Db
     static protected $isConnect = false;
     public $link = null; //数据库连接
 
-    function connectDb()
+    public function connect()
     {
         if (!(self::$isConnect)) {
-        	if(C('DB_PCONNECT')){
-            	$link = mysql_pconnect(C("DB_HOST"), C("DB_USER"), C("DB_PASSWORD"),true);
-			}else{
-				$link = mysql_connect(C("DB_HOST"), C("DB_USER"), C("DB_PASSWORD"),true,131072);
-			}
+            if (C('DB_PCONNECT')) {
+                $link = mysql_pconnect(C("DB_HOST"), C("DB_USER"), C("DB_PASSWORD"), true);
+            } else {
+                $link = mysql_connect(C("DB_HOST"), C("DB_USER"), C("DB_PASSWORD"), true, 131072);
+            }
             if (!$link) {
                 return false;
             } else {
@@ -74,23 +74,28 @@ class DbMysql extends Db
         }
         return $res;
     }
+
     //数据安全处理
     public function escapeString($str)
     {
         if ($this->link) {
-            return mysql_real_escape_string($str,$this->link);
+            return mysql_real_escape_string($str, $this->link);
         } else {
             return mysql_escape_string($str);
         }
     }
+
     //执行SQL没有返回值
     public function exe($sql)
     {
-        //查询参数初始化
+        /**
+         * 查询参数初始化
+         */
         $this->optInit();
-        //将SQL添加到调试DEBUG
-        $this->debug($sql);
-        is_resource($this->link) or $this->connect($this->table);
+        /**
+         * 记录SQL语句
+         */
+        $this->recordSql($sql);
         $this->lastquery = mysql_query($sql, $this->link);
         if ($this->lastquery) {
             //自增id
@@ -105,9 +110,16 @@ class DbMysql extends Db
     //发送查询 返回数组
     public function query($sql)
     {
-        $cache_time = $this->cacheTime ? $this->cacheTime : intval(C("CACHE_SELECT_TIME"));
+        /**
+         * 缓存时间没有设置时使用配置项缓存时间
+         */
+        $cacheTime = is_null($this->opt['cacheTime']) ? C("CACHE_SELECT_TIME") : $this->opt['cacheTime'];
+        /**
+         * 查询参数初始化
+         */
+        $this->optInit();
         $cacheName = $sql . APP . CONTROLLER . ACTION;
-        if ($cache_time >= 0) {
+        if ($cacheTime > -1) {
             $result = S($cacheName, FALSE, null, array("Driver" => "file", "dir" => APP_CACHE_PATH, "zip" => false));
             if ($result) {
                 //查询参数初始化
@@ -122,10 +134,10 @@ class DbMysql extends Db
         while (($res = $this->fetch()) != false) {
             $list [] = $res;
         }
-        if ($list && $cache_time >= 0 && count($list) <= C("CACHE_SELECT_LENGTH")) {
-            S($cacheName, $list, $cache_time, array("Driver" => "file", "dir" => APP_CACHE_PATH, "zip" => false));
+        if ($list && $cacheTime >= 0 && count($list) <= C("CACHE_SELECT_LENGTH")) {
+            S($cacheName, $list, $cacheTime, array("Driver" => "file", "dir" => APP_CACHE_PATH, "zip" => false));
         }
-        return empty($list) ? array():$list ;
+        return empty($list) ? array() : $list;
     }
 
     //释放结果集

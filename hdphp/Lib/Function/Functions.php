@@ -23,21 +23,22 @@
  * @param Boolean $full 是否为全表名
  * @return Object 返回模型对象
  */
-function M($table = null, $full = null)
+function M($table = null, $full = null, $param = array(), $driver = null)
 {
-    return new Model($table, $full);
+    return new Model($table, $full, $param, $driver);
 }
 
 /**
- * 生成扩展模型
- * @param $name 模型名
- * @param array $param __init()方法参数
+ * 获得扩展模型
+ * @param $name 模型名不加Model后缀
+ * @param bool $full 是否为全表名
+ * @param array $param 参数
  * @return mixed
  */
-function K($name, $param = array())
+function K($name, $full = null, $param = array(), $driver = null)
 {
-    $class = $name . "Model";
-    return new $class(strtolower($name), null, null, $param);
+    $class = ucfirst($name) . "Model";
+    return new $class(strtolower($name), $full, $param);
 }
 
 /**
@@ -52,13 +53,13 @@ function R($tableName = null, $full = null)
 
 /**
  * 获得视图模型
- * @param null $tableName 表名
+ * @param null $table 表名
  * @param null $full 带前缀
  * @return ViewModel
  */
-function V($tableName = null, $full = null)
+function V($table = null, $full = null)
 {
-    return new ViewModel($tableName, $full);
+    return new ViewModel($table, $full);
 }
 
 /**
@@ -1066,7 +1067,7 @@ function U($path, $args = array())
             $root = __WEB__ . '/'; //入口位置
             break;
         case 2:
-            $root = C('URL_REWRITE') ? __WEB__.'/' : __WEB__ . '?';
+            $root = C('URL_REWRITE') ? __WEB__ . '/' : __WEB__ . '?';
             break;
         case 3:
             $root = __WEB__ . '?' . C('PATHINFO_VAR') . '=';

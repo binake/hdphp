@@ -13,111 +13,105 @@
 /**
  * 基本模型处理类
  * @package     Model
- * @author      后盾向军 <houdunwangxj@gmail.com>
+ * @author      后盾向军 <2300071698@qq.com>
  */
 class Model
 {
-    //全表名
-    public $tableFull = NULL;
-    //不带前缀表名
+    //数据表
     public $table = NULL;
-    //数据库连接驱动
+    //数据库连接驱动对象
     public $db = NULL;
-    //验证不通过的错误信息
-    public $error = NULL;
-    //触发器,开启时执行__after_delete等方法
-    public $trigger = true;
-    //增、改操作数据
+    //触发器状态
+    public $trigger = false;
+    //模型错误信息
+    public $error;
+    //模型操作数据
     public $data = array();
     //验证规则
     public $validate = array();
-    //自动完成
+    //自动完成规则
     public $auto = array();
-    //字段映射
+    //字段映射规则
     public $map = array();
+    //别名方法
+    public $alias = array('add' => 'insert', 'save' => 'update', 'all' => 'select', 'del' => 'delete');
 
     /**
      * 构造函数
      * @param null $table 表名
-     * @param bool $full 是否为全表
-     * @param array $param 参数
+     * @param bool $full 全表名
      * @param null $driver 驱动
+     * @param array $param 参数
      */
-    public function __construct($table = null, $full = false, $driver = null, $param = array())
+    public function __construct($table = null, $full = null, $param = array(), $driver = null)
     {
+        /**
+         * 初始化默认表
+         * 如果设置了table属性时,使用table属性值为表名
+         */
+        if (!$this->table) {
+            $this->table = $table;
+        }
+        /**
+         * 获得数据库引擎
+         */
+        $this->db = DbFactory::factory($driver, $this->table, $full);
+        /**
+         * 执行子类构造函数__init
+         */
         if (method_exists($this, "__init")) {
             $this->__init($param);
         }
-        $this->run($table, $full, $driver);
-    }
-
-    //获得连接驱动
-    protected function run($table, $full = false, $driver = null)
-    {
-        //初始化默认表
-        $this->getTable($table, $full);
-        //获得数据库引擎
-        $db = DbFactory::factory($driver, $this->tableFull);
-        if ($db) {
-            $this->db = $db;
-        } else { //连接异常
-            if (DEBUG) {
-                halt("数据库连接错误");
-            } else {
-                Log::write("数据库连接错误");
-                return false;
-            }
-        }
-    }
-
-    /**
-     * 定义模型错误
-     * @param $error 错误信息
-     */
-    public function error($error)
-    {
-        $this->error = $error;
-    }
-
-    //设置操作表
-    protected function getTable($table = null, $full = false)
-    {
-        if (!is_null($this->tableFull)) {
-            $table = $this->tableFull;
-        } elseif (!is_null($this->table)) {
-            $table = C("DB_PREFIX") . $this->table;
-        } else if (is_null($table)) {
-            $table = null;
-        } elseif (!is_null($table)) {
-            if ($full !== true) {
-                $table = C("DB_PREFIX") . $table;
-            }
-        }
-        $this->tableFull = $table;
-        $this->table = preg_replace('@^\s*' . C("DB_PREFIX") . '@', '', $table);
     }
 
     /**
      * 魔术方法  设置模型属性如表名字段名
      * @param string $var 属性名
      * @param mixed $value 值
+     * @return object
      */
     public function __set($var, $value)
     {
-        //如果为模型方法时，执行模型方法如$this->where="id=1"
-        $_var = strtolower($var);
-        $property = array_keys($this->db->opt);
-        if (in_array($_var, $property)) {
-            $this->$_var($value);
-        } else {
-            $this->data[$var] = $value;
+        /**
+         * 设置$data属性值用于插入修改等操作
+         */
+        $this->data[$var] = $value;
+    }
+
+    /**
+     * 魔术方法
+     * @param $name 变量
+     * @return mixed
+     */
+    public function __get($name)
+    {
+        /**
+         * 返回$this->data属性
+         * $this->data属性指添加与编辑的数据
+         */
+        if (isset($this->data[$name])) {
+            return $this->data[$name];
         }
     }
 
-    //获得$this->data值
-    public function __get($name)
+    /**
+     * 魔术方法用于动态执行Db类中的方法
+     * @param $method
+     * @param $param
+     * @return mixed
+     */
+    public function __call($method, $param)
     {
-        return isset($this->data[$name]) ? $this->data[$name] : null;
+        /**
+         * 执行别名函数
+         * 如add 是insert别名,执行add时执行insert方法
+         */
+        if (isset($this->alias[$method])) {
+            return call_user_func_array(array($this, $this->alias[$method]), $param);
+        } else if (method_exists($this->db, $method)) {
+            $RETURN = call_user_func_array(array($this->db, $method), $param);
+            return $RETURN === null ? $this : $RETURN;
+        }
     }
 
     /**
@@ -127,11 +121,14 @@ class Model
      */
     public function data($data = array())
     {
-        if (is_array($data) && !empty($data)) {
-            $this->data = $data;
-        } else if (empty($this->data)) {
+        if (empty($data)) {
             $this->data = $_POST;
+        } else {
+            $this->data = $data;
         }
+        /**
+         * 系统开启转义时,去除转义操作
+         */
         foreach ($this->data as $key => $val) {
             if (MAGIC_QUOTES_GPC && is_string($val)) {
                 $this->data[$key] = stripslashes($val);
@@ -147,59 +144,75 @@ class Model
      */
     public function create($data = array())
     {
-        //验证令牌
-        if (!$this->token()) {
-            return false;
-        }
-        //获得数据
+        /**
+         * 初始数据
+         */
         $this->data($data);
-        //自动验证
-        if (!$this->validate()) {
-            return false;
+        /**
+         * 批量执行方法
+         * checkToken 验证表单令牌
+         * validate 自动验证
+         * auto 自动完成
+         * map 自动映射
+         */
+        $action = array('checkToken', 'validate', 'auto', 'map');
+        foreach ($action as $a) {
+            if (!$this->$a()) return false;
         }
-        //自动完成
-        $this->auto();
-        //字段映射
-        $this->map();
-        return true;
+    }
+
+    /**
+     * 表单令牌验证
+     * @return bool
+     */
+    private function checkToken()
+    {
+        if (!Token::check()) {
+            $this->error = '表单令牌错误';
+            return false;
+        } else {
+            return true;
+        }
     }
 
     /**
      * 字段映射
+     * 将添加或更新的数据键名改为表字段名
      */
-    protected function map()
+    private function map()
     {
-        if (empty($this->map))
-            return;
-        $this->data();
-        foreach ($this->map as $k => $v) {
-            //处理POST
-            if (isset($this->data[$k])) {
-                $this->data[$v] = $this->data[$k];
-                unset($this->data[$k]);
+        if ($this->map) {
+            foreach ($this->map as $k => $v) {
+                //处理POST
+                if (isset($this->data[$k])) {
+                    $this->data[$v] = $this->data[$k];
+                    unset($this->data[$k]);
+                }
             }
         }
+        return true;
     }
 
-    //当前操作的方法
-    protected function getCurrentMethod()
+    /**
+     * 当前操作的方法
+     * 主要是判断数据中是否存在主键,有主键为更新操作,否则为添加操作
+     * 1为播入操作 2为更新操作
+     * @return int
+     */
+    private function getCurrentMethod()
     {
         //1 插入  2 更新
         return isset($this->data[$this->db->pri]) ? 2 : 1;
     }
 
-    //join多表关联
-    public function join($join)
-    {
-        $join = preg_replace('@__(\w+)__@', C('DB_PREFIX') . '\1', $join);
-        $this->db->opt['table'] = $join;
-        return $this;
-    }
 
-    //字段验证
-    public function validate($data = array())
+    /**
+     * 字段验证
+     * 验证字段合法性,支持自定义函数,模型方法与Validate验证类方法的操作
+     * @return bool
+     */
+    private function validate()
     {
-        $this->data($data);
         //当前方法
         $current_method = $this->getCurrentMethod();
         $_data = &$this->data;
@@ -277,10 +290,12 @@ class Model
         return true;
     }
 
-    //自动完成
-    public function auto($data = array())
+    /**
+     * 自动完成
+     * 对添加或修改的数据进行自动处理
+     */
+    private function auto()
     {
-        $this->data($data);
         $_data = &$this->data;
         $motion = $this->getCurrentMethod();
         foreach ($this->auto as $v) {
@@ -334,615 +349,97 @@ class Model
                     break;
             }
         }
-    }
-
-    /**
-     * __call方法
-     * @param type $func
-     * @param type $args
-     * @return type
-     */
-    public function __call($func, $args)
-    {
-        //模型中不存在方法
-        halt('模型中不存方法' . $func);
-    }
-
-    /**
-     * 临时更改操作表
-     * @param string $table 表名
-     * @param bool $full 是否带表前缀
-     * @return $this
-     */
-    public function table($table, $full = FALSE)
-    {
-        if ($full !== TRUE) {
-            $table = C("DB_PREFIX") . $table;
-        }
-        $this->db->table($table);
-        return $this;
-    }
-
-    //设置触发器状态
-    public function trigger($state)
-    {
-        $this->trigger = $state;
-    }
-
-    /**
-     * 设置字段
-     * @param array $field 字段
-     * @param bool $exclude 是否排除
-     * @return $this
-     */
-    public function field($field = array(), $exclude = false)
-    {
-        if (empty($field))
-            return $this;
-        $this->db->field($field, $exclude);
-        return $this;
-    }
-
-    /**
-     * 执行查询操作结果不缓存
-     * 示例：$Db->Cache(30)->all();
-     */
-    public function cache($time = -1)
-    {
-        $this->db->cache($time);
-        return $this;
-    }
-
-    //SQL中的LIKE规则
-    public function like($arg = array())
-    {
-        if (empty($arg))
-            return $this;
-        $this->db->like($arg);
-        return $this;
-    }
-
-    /**
-     * GROUP语句定义
-     */
-    public function group($arg = array())
-    {
-        if (empty($arg))
-            return $this;
-        $this->db->group($arg);
-        return $this;
-    }
-
-    /**
-     * HAVING语句定义
-     */
-    public function having($arg = array())
-    {
-        if (empty($arg))
-            return $this;
-        $this->db->having($arg);
-        return $this;
-    }
-
-    /**
-     * ORDER 语句定义
-     * 示例：$Db->order("id desc")->all();
-     */
-    public function order($arg = array())
-    {
-        if (empty($arg))
-            return $this;
-        $this->db->order($arg);
-        return $this;
-    }
-
-    /**
-     * IN 语句定义
-     * 示例：$Db->in(1,2,3)->all();
-     */
-    public function in($arg = array())
-    {
-        if (empty($arg))
-            return $this;
-        $this->db->where($arg);
-        return $this;
-    }
-
-    /**
-     * 删除记录
-     * 示例：$Db->del("uid=1");
-     */
-    public function del($data = array())
-    {
-        return $this->delete($data);
-    }
-
-    /**
-     * 慎用  会删除表中所有数据
-     * $Db->delall();
-     */
-    public function delAll($data = array())
-    {
-        $this->where("1=1");
-        return $this->delete($data);
-    }
-
-    /**
-     * 删除记录
-     * 示例：$Db->delete("uid=1");
-     */
-    public function delete($data = array())
-    {
-        $this->trigger and $this->__before_delete($data);
-        $result = $this->db->delete($data);
-        $this->error = $this->db->error;
-        $this->trigger and $this->__after_delete($result);
-        return $result;
-    }
-
-    /**
-     * 执行一个SQL语句  有返回值
-     * 示例：$Db->query("select title,click,addtime from hd_news where uid=18");
-     */
-    public function query($data = array())
-    {
-        return $this->db->query($data);
-    }
-
-    /**
-     * 执行一个SQL语句  没有有返回值
-     * 示例：$Db->exe("delete from hd_news where id=16");
-     */
-    public function exe($sql)
-    {
-        return $this->db->exe($sql);
-    }
-
-    /**
-     * LIMIT 语句定义
-     * 示例：$Db->limit(10)->all("sex=1");
-     */
-    public function limit($opt = null)
-    {
-        if (empty($opt)) {
-            return $this;
-        }
-        $this->db->limit($opt);
-        return $this;
-    }
-
-    /**
-     * 查找满足条件的一条记录
-     * 示例：$Db->find("id=188")
-     */
-    public function find($data = array())
-    {
-        $result = $this->limit(1)->select($data);
-        return is_array($result) && isset($result[0]) ? $result[0] : $result;
-    }
-
-    /**
-     * 查找满足条件的所有记录
-     * 示例：$Db->all("age>20")
-     */
-    public function all($args = array())
-    {
-        return $this->select($args);
-    }
-
-    /**
-     * 查找满足条件的所有记录
-     * 示例：$Db->select("age>20")
-     */
-    public function select($args = array())
-    {
-        $this->trigger and $this->__before_select($arg);
-        $result = $this->db->select($args);
-        $this->trigger and $this->__after_select($result);
-        $this->error = $this->db->error;
-        return $result;
-    }
-
-    /**
-     * SQL中的WHERE规则
-     * 示例：$Db->where("username like '%向军%')->count();
-     */
-    public function where($args = array())
-    {
-        if (!empty($args)) {
-            $this->db->where($args);
-        }
-        return $this;
-    }
-
-    /**
-     * 查找满足条件的所有记录(一维数组)
-     * 示例：$Db->getField("username")
-     */
-    public function getField($field, $return_all = false)
-    {
-        //按字段查询结果
-        $result = $this->field($field)->select();
-        if ($result) {
-            //字段数组
-            $field = explode(',', preg_replace('@\s@', '', $field));
-            //如果有多个字段时，返回多维数组并且第一个字段值做为KEY使用
-            switch (count($field)) {
-                case 1:
-                    //只有一个字段，只返回一个字段值
-                    if ($return_all) {
-                        $data = array();
-                        foreach ($result as $v) {
-                            $data[] = current($v);
-                        }
-                        return $data;
-                    } else {
-                        return current($result[0]);
-                    }
-                case 2:
-                    $data = array();
-                    foreach ($result as $v) {
-                        $data[$v[$field[0]]] = $v[$field[1]];
-                    }
-                    return $data;
-                default:
-                    $data = array();
-                    foreach ($result as $v) {
-                        $data[$v[$field[0]]] = $v;
-                    }
-                    return $data;
-            }
-        } else {
-            return NULL;
-        }
-    }
-
-    //添加数据
-    public function update($data = array())
-    {
-        $this->data($data);
-        $data = $this->data;
-        $this->data = array();
-        $this->trigger and $this->__before_update($data);
-        if (empty($data)) {
-            $this->error = "没有任何数据用于UPDATE！";
-            return false;
-        }
-        $this->error = $this->db->error;
-        $result = $this->db->update($data);
-        $this->trigger and $this->__after_update($result);
-        return $result;
-    }
-
-    //更新记录
-    public function save($data = array())
-    {
-        return $this->update($data);
-    }
-
-    //插入数据
-    public function insert($data = array(), $type = "INSERT")
-    {
-        $this->data($data);
-        $data = $this->data;
-        $this->data = array();
-        $this->trigger and $this->__before_insert($data);
-        $result = $this->db->insert($data, $type);
-        $this->error = $this->db->error;
-        $this->trigger and $this->__after_insert($result);
-        return $result;
-    }
-
-    //批量插入数据
-    public function addAll($data, $type = 'INSERT')
-    {
-        $id = array();
-        if (is_array($data) && !empty($data)) {
-            foreach ($data as $d) {
-                if (is_array($d))
-                    $id[] = $this->insert($d, $type);
-            }
-        }
-        return empty($id) ? NULL : $id;
-    }
-
-    //replace方式插入数据
-    public function replace($data = array())
-    {
-        return $this->insert($data, "REPLACE");
-    }
-
-    //插入数据
-    public function add($data = array(), $type = 'INSERT')
-    {
-        return $this->insert($data, $type);
-    }
-
-    /**
-     * 判断表中字段是否在存在
-     * @param string $fieldName 字段名
-     * @param string $table 表名(不带表前缀)
-     * @return bool
-     */
-    public function fieldExists($fieldName, $table)
-    {
-        $Model = M();
-        if (!$Model->tableExists($table)) {
-            $this->error = '数据表不存在';
-        } else {
-            $field = $Model->query("DESC " . C("DB_PREFIX") . $table);
-            foreach ($field as $f) {
-                if (strtolower($f['Field']) == strtolower($fieldName)) {
-                    return true;
-                }
-            }
-            return false;
-        }
-    }
-
-    /* 判断表是否存在
-     * @param string $table 表名
-     * @return bool
-     */
-    public function tableExists($tableName)
-    {
-        $Model = M();
-        $tableArr = $Model->query("SHOW TABLES");
-        foreach ($tableArr as $k => $table) {
-            $tableTrue = $table['Tables_in_' . C('DB_DATABASE')];
-            if (strtolower($tableTrue) == strtolower(C('DB_PREFIX') . $tableName)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * 删除表
-     * @param string $table 表名
-     * @return mixed
-     */
-    public function dropTable($table)
-    {
-        return $this->exe("DROP TABLE IF EXISTS `" . C('DB_PREFIX') . $table . "`");
-    }
-
-    /**
-     * 统计
-     */
-    public function count($field = '*')
-    {
-        $data = $this->field(array("count($field)" => 'c'))->select();
-        return $data ? $data[0]['c'] : $data;
-    }
-
-    /**
-     * 求最大值
-     */
-    public function max($field)
-    {
-        $data = $this->field(array("max($field)" => 'c'))->select();
-        return $data ? $data[0]['c'] : $data;
-    }
-
-    /**
-     * 求最小值
-     */
-    public function min($field)
-    {
-        $data = $this->field(array("min($field)" => 'c'))->select();
-        return $data ? $data[0]['c'] : $data;
-    }
-
-    /**
-     * 求平均值
-     */
-    public function avg($field)
-    {
-        $data = $this->field(array("avg($field)" => 'c'))->select();
-        return $data ? $data[0]['c'] : $data;
-    }
-
-    /**
-     * SQL中的SUM计算
-     */
-    public function sum($field)
-    {
-        $data = $this->field(array("sum($field)" => 'c'))->select();
-        return $data ? $data[0]['c'] : $data;
-    }
-
-    /**
-     * 字段值增加
-     * 示例：$Db->dec("price","id=20",188)
-     * 将id为20的记录的price字段值增加188
-     * @param $field 字段名
-     * @param $where 条件
-     * @param int $step 增加数
-     * @return mixed
-     */
-    public function inc($field, $where, $step = 1)
-    {
-        $sql = "UPDATE " . $this->db->opt['table'] . " SET " . $field . '=' . $field . '+' . $step . " WHERE " . $where;
-        return $this->exe($sql);
-    }
-
-    //减少字段值
-    public function dec($field, $where, $step = 1)
-    {
-        $sql = "UPDATE " . $this->db->opt['table'] . " SET " . $field . '=' . $field . '-' . $step . " WHERE " . $where;
-        return $this->exe($sql);
-    }
-
-    /**
-     * 验证令牌
-     */
-    public function token()
-    {
-        if (C("TOKEN_ON") || isset($_POST[C("TOKEN_NAME")]) || isset($_GET[C("TOKEN_NAME")])) {
-            if (!Token::check()) {
-                $this->error = '表单令牌错误';
-                return false;
-            }
-        }
         return true;
     }
 
     /**
-     * 获得表字段
-     * @param $table
-     * @return mixed
-     */
-    public function getTableFields($table)
-    {
-        $fields = $this->db->getTableFields(C("DB_PREFIX") . $table);
-        if (!empty($fields)) {
-            return implode(',', array_keys($fields['fields']));
-        }
-    }
-
-    /**
-     * 获得受影响的记录数
-     */
-    public function getAffectedRows()
-    {
-        return $this->db->getAffectedRows();
-    }
-
-    /**
-     * 获得最后插入的ID
-     */
-    public function getInsertId()
-    {
-        return $this->db->getInsertId();
-    }
-
-    /**
-     * 获得最后一条SQL
-     */
-    public function getLastSql()
-    {
-        return $this->db->getLastSql();
-    }
-
-    /**
-     * 获得所有SQL
-     */
-    public function getAllSql()
-    {
-        return $this->db->getAllSql();
-    }
-
-    //获得MYSQL版本
-    public function getVersion()
-    {
-        return $this->db->getVersion();
-    }
-
-    //创建数据库
-    public function createDatabase($database, $charset = "utf8")
-    {
-        return $this->exe("CREATE DATABASE IF NOT EXISTS `$database` CHARSET " . $charset);
-    }
-
-    //获得数据库或表大小
-    public function getSize($table)
-    {
-        return $this->db->getSize($table);
-    }
-
-    //获得所有表信息
-    public function getAllTableInfo()
-    {
-        return $this->db->getAllTableInfo();
-    }
-
-    //清空表
-    public function truncate($table)
-    {
-        return $this->exe("TRUNCATE TABLE `" . C('DB_PREFIX') . $table . "`");
-    }
-
-    /**
-     * 优化表解决表碎片问题
-     * @param array $table 表
+     * 设置触发器状态
+     * @param $status
      * @return bool
      */
-    public function optimize($table)
+    public function trigger($status)
     {
-        $this->exe("OPTIMIZE TABLE `" . C('DB_PREFIX') . $table . "`");
-    }
-
-    //修复数据表
-    public function repair($table)
-    {
-        return $this->exe("REPAIR TABLE `" . C('DB_PREFIX') . $table . "`");
-    }
-
-    //修改表名
-    public function rename($old, $new)
-    {
-        $this->exe("ALTER TABLE `" . C('DB_PREFIX') . $old . "` RENAME " . C('DB_PREFIX') . $new);
+        $this->trigger = $status;
+        return $this;
     }
 
     /**
-     * 开启事务
+     * 删除数据
+     * @param $where 条件
      * @return mixed
      */
-    public function beginTrans()
+    public function delete($where='')
     {
-        return $this->db->beginTrans();
+        $this->trigger && method_exists($this, '__before_delete') && $this->__before_delete();
+        $return = $this->db->delete($where);
+        $this->trigger && method_exists($this, '__after_delete') && $this->__after_delete($return);
+        return $return;
     }
 
-    //提供一个事务
-    public function commit()
+    /**
+     * 查找满足条件的一条记录
+     * @param string $where 条件,如果为数字查询主键值
+     * @return mixed
+     */
+    public function find($where = '')
     {
-        return $this->db->commit();
+        $result = $this->select($where);
+        return is_array($result) ? current($result) : $result;
     }
 
-    //回滚事务
-    public function rollback()
+    /**
+     * 查询结果
+     * @param string $where 条件
+     * @return mixed
+     */
+    public function select($where = '')
     {
-        return $this->db->rollback();
+        $this->trigger && method_exists($this, '__before_select') && $this->__before_select();
+        $return = $this->db->select($where);
+        $this->trigger && method_exists($this, '__after_select') && $this->__after_select($return);
+        return $return;
     }
 
-    //添加数据前执行的方法
-    public function __before_insert(&$data)
+    /**
+     * 更新数据
+     * @param array $data 更新的数据
+     * @return mixed
+     */
+    public function update($data = array())
     {
+        $this->trigger && method_exists($this, '__before_update') && $this->__before_update($data);
+        $this->data($data);
+        $return = $this->db->update($this->data);
+        $this->trigger && method_exists($this, '__after_update') && $this->__after_update($return);
+        return $return;
     }
 
-    //添加数据后执行的方法
-    public function __after_insert($data)
+    /**
+     * 插入数据
+     * @param array $data 新数据
+     * @return mixed
+     */
+    public function insert($data = array())
     {
+        $this->trigger && method_exists($this, '__before_insert') && $this->__before_insert($data);
+        $this->data($data);
+        $return = $this->db->insert($this->data, 'INSERT');
+        $this->trigger && method_exists($this, '__after_insert') && $this->__after_insert($return);
+        return $return;
     }
 
-    //删除数据前执行的方法
-    public function __before_delete(&$data)
+    /**
+     * replace方式插入数据
+     * 更新数据中存在主键或唯一索引数据为更新操作否则为添加操作
+     * @param array $data
+     * @return mixed
+     */
+    public function replace($data = array())
     {
-    }
-
-    //删除数据后执行的方法
-    public function __after_delete($data)
-    {
-    }
-
-    //更新数据后前执行的方法
-    public function __before_update(&$data)
-    {
-    }
-
-    //更新数据后执行的方法
-    public function __after_update($data)
-    {
-    }
-
-    //查询数据前前执行的方法
-    public function __before_select(&$data)
-    {
-    }
-
-    //查询数据后执行的方法
-    public function __after_select($data)
-    {
+        $this->trigger && method_exists($this, '__before_insert') && $this->__before_insert($data);
+        $this->data($data);
+        $return = $this->db->insert($this->data, 'REPLACE');
+        $this->trigger && method_exists($this, '__after_insert') && $this->__after_insert($return);
+        return $return;
     }
 }

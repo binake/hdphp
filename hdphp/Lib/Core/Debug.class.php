@@ -49,14 +49,13 @@ final class Debug
             self::$memory_peak[$start] = false;
         }
     }
-
     /**
      * 运行时间
-     * @param string $start 起始标记
-     * @param string $end   结束标记
-     * @param int $decimals 小数位
-     * @return void
-     * @throws exceptionHD
+     * @param $start
+     * @param string $end
+     * @param int $decimals
+     * @return string
+     * @throws HdException
      */
     static public function runtime($start, $end = '', $decimals = 4)
     {

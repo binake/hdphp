@@ -349,18 +349,17 @@ final class Route
      */
     static public function removeUrlParam($var, $url = null)
     {
-        if (is_null($url)) $url = __URL__;
-        $dli = C("PATHINFO_DLI");
-        if (!is_null($url)) {
-            $url = C('URL_TYPE') == 2 ? $url . '&' : $url . $dli;
-            switch (C('URL_TYPE')) {
-                case 2: //普通模式
-                    $url = preg_replace(array("/$var=.*?&/", "/&&/"), '', $url);
-                    break;
-                default: //pathinfo与兼容模式
-                    $url = preg_replace(array("/{$var}{$dli}.*?{$dli}/"), '', $url);
-            }
-            return rtrim($url, "&" . $dli);
+        if (is_null($url)) {
+            $url = __URL__;
         }
+        $url = C('URL_TYPE') == 2 ? $url . '&' : $url . C("PATHINFO_DLI");
+        switch (C('URL_TYPE')) {
+            case 2: //普通模式
+                $url = preg_replace(array("/$var=.*?&/", "/&&/"), '', $url);
+                break;
+            default: //pathinfo与兼容模式
+                $url = preg_replace(array("/{$var}{$dli}.*?{$dli}/"), '', $url);
+        }
+        return rtrim($url, "&" . $dli);
     }
 }

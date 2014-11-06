@@ -21,7 +21,7 @@ if (!defined("HDPHP_PATH"))
 interface DbInterface
 {
 
-    public function connectDb(); //获得连接   参数为表名
+    public function connect(); //获得连接   参数为表名
 
     public function close(); //关闭数据库
 
@@ -42,4 +42,14 @@ interface DbInterface
     public function rollback(); //回滚事务
 
     public function escapeString($str); //数据安全处理
+
+    public function link($table, $full);//获得链接
+
+    /**
+     * 设置表
+     * @param $table
+     * @param $full
+     * @return mixed
+     */
+    public function table($table, $full);//设置表
 }

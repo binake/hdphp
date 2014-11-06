@@ -24,12 +24,13 @@ class DbMysqli extends Db
     public $link = null;
 
     //获得数据库连接
-    public function connectDb()
+    public function connect()
     {
         if (!self::$isConnect) {
             $link = new mysqli(C("DB_HOST"), C("DB_USER"), C("DB_PASSWORD"), C("DB_DATABASE"), intval(C("DB_PORT")));
             //连接错误
             if (mysqli_connect_errno()) {
+                $this->error(mysqli_connect_error());
                 return false;
             }
             self::$isConnect = $link;
@@ -68,6 +69,7 @@ class DbMysqli extends Db
         }
         return $res;
     }
+
     //数据安全处理
     public function escapeString($str)
     {
@@ -81,10 +83,14 @@ class DbMysqli extends Db
     //执行SQL没有返回值
     public function exe($sql)
     {
-        //查询参数初始化
+        /**
+         * 查询参数初始化
+         */
         $this->optInit();
-        //将SQL添加到调试DEBUG
-        $this->debug($sql);
+        /**
+         * 记录SQL语句
+         */
+        $this->recordSql($sql);
         $this->lastQuery = $this->link->query($sql);
         if ($this->lastQuery) {
             //自增id
@@ -99,13 +105,18 @@ class DbMysqli extends Db
     //发送查询 返回数组
     public function query($sql)
     {
-        $cache_time = $this->cacheTime ? $this->cacheTime : intval(C("CACHE_SELECT_TIME"));
+        /**
+         * 缓存时间没有设置时使用配置项缓存时间
+         */
+        $cacheTime = is_null($this->opt['cacheTime']) ? C("CACHE_SELECT_TIME") : $this->opt['cacheTime'];
+        /**
+         * 查询参数初始化
+         */
+        $this->optInit();
         $cacheName = md5($sql . MODULE . CONTROLLER . ACTION);
-        if ($cache_time >= 0) {
+        if ($cacheTime > -1) {
             $result = S($cacheName, FALSE, null, array("Driver" => "file", "dir" => APP_CACHE_PATH, "zip" => false));
             if ($result) {
-                //查询参数初始化
-                $this->optInit();
                 return $result;
             }
         }
@@ -116,8 +127,8 @@ class DbMysqli extends Db
         while (($res = $this->fetch()) != false) {
             $list [] = $res;
         }
-        if ($list && $cache_time >= 0 && count($list) <= C("CACHE_SELECT_LENGTH")) {
-            S($cacheName, $list, $cache_time, array("Driver" => "file", "dir" => APP_CACHE_PATH, "zip" => false));
+        if ($list && $cacheTime >= 0 && count($list) <= C("CACHE_SELECT_LENGTH")) {
+            S($cacheName, $list, $cacheTime, array("Driver" => "file", "dir" => APP_CACHE_PATH, "zip" => false));
         }
         return empty($list) ? array() : $list;
     }

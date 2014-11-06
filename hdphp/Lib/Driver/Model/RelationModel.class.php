@@ -16,7 +16,7 @@
  * @subpackage  Driver
  * @author      后盾向军 <houdunwangxj@gmail.com>
  */
-//关联常量定义
+//一对一
 defined("HAS_ONE") or define("HAS_ONE", "HAS_ONE");
 //一对多 主表 VS 从表  用户表（主表）  VS  用户信息表
 defined("HAS_MANY") or define("HAS_MANY", "HAS_MANY");
@@ -27,82 +27,51 @@ defined("MANY_TO_MANY") or define("MANY_TO_MANY", "MANY_TO_MANY");
 
 class RelationModel extends Model
 {
-    //关联模型定义
-    public $join = array();
-    public $joinTable = array();
-    //设置关联表
-    public function relation($joinTable = array())
-    {
-        if (is_string($joinTable)) {
-            $this->joinTable = explode(',', $joinTable);
-        }
-        return $this;
-    }
+    /**
+     * 关联模型定义
+     * @var array
+     */
+    public $relation = array();
 
-    //本次需要关联的表
-    private function check_join($table)
-    {
-        //验证表
-        if (!empty($this->joinTable) && !in_array($table, $this->joinTable)) {
-            return false;
-        } else {
-            return true;
-        }
-
-    }
-
-    //验证关联定义
-    private function checkJoinSet($set)
-    {
-        if (empty($set['type']) || !in_array($set['type'], array(HAS_ONE, HAS_MANY, BELONGS_TO, MANY_TO_MANY))
-        ) {
-            error("关联定义规则[type]设置错误");
-            return false;
-        }
-        if (empty($set['foreign_key'])) {
-            error("关联定义规则[foreign_key]设置错误");
-            return false;
-        }
-        if (empty($set['parent_key'])) {
-            error("关联定义规则[parent_key]设置错误");
-            return false;
-        }
-        return true;
-    }
-
-    //关联查询
+    /**
+     * 关联查询
+     * @param array $data
+     * @return mixed
+     */
     public function select($data = array())
     {
-        //主表主键
-        $pri = $this->db->pri;
         $result = call_user_func(array($this->db, __FUNCTION__), $data);
-        //插入失败或者没有定义关联join属性
-        if (!$result || $this->joinTable === false || empty($this->join) || !is_array($this->join)) {
-            $this->error = $this->db->error;
-            $this->joinTable = array();
+        /**
+         * 主表查询没有结果或失败
+         */
+        if (!$result) {
             return $result;
         }
-        //关联操作
-        foreach ($this->join as $table => $set) {
-            //本次需要关联的表
-            if (!$this->check_join($table)) continue;
-            //验证关联定义
-            if (!$this->checkJoinSet($set)) continue;
-            //必须定义foreign_key 与 parent_key
-            $fk = $set['foreign_key'];
+        /**
+         * 处理关联操作
+         */
+        foreach ($this->relation as $table => $set) {
+            /**
+             * 主表关联字段
+             */
             $pk = $set['parent_key'];
-            //关联表对象
+            /**
+             * 从表关联字段
+             */
+            $fk = $set['foreign_key'];
+            /**
+             * 从表模型对象
+             */
             $db = M($table);
-            //附表字段
-            $field = "";
-            if (isset($set['field'])) {
-                $field = $set['field'];
-            }
+            /**
+             * 附表设置了字段定义
+             */
+            $field = isset($set['field']) ? $set['field'] : '';
             switch ($set['type']) {
                 //一对一
                 case HAS_ONE:
                     foreach ($result as $n => $d) {
-                        $s = $db->field($field)->where($fk . '=' . $d[$pri])->find();
+                        $s = $db->field($field)->where($fk . '=' . $d[$pk])->find();
                         if (is_array($s)) {
                             $result[$n] = array_merge($d, $s);
                         }
@@ -110,7 +79,7 @@ class RelationModel extends Model
                     break;
                 case HAS_MANY:
                     foreach ($result as $n => $d) {
-                        $s = $db->field($field)->where($fk . '=' . $d[$pri])->all();
+                        $s = $db->field($field)->where($fk . '=' . $d[$pk])->all();
                         if (is_array($s)) {
                             $result[$n][$table] = $s;
                         }
@@ -118,101 +87,102 @@ class RelationModel extends Model
                     break;
                 case BELONGS_TO:
                     foreach ($result as $n => $d) {
-                        $s = $db->field($field)->where($pk . '=' . $d[$fk])->find();
+                        $s = $db->field($field)->where($fk . '=' . $d[$pk])->find();
                         if (is_array($s)) {
                             $result[$n] = array_merge($d, $s);
                         }
                     }
                     break;
                 case MANY_TO_MANY:
-                    if (!isset($set['relation_table'])) break;
                     foreach ($result as $n => $d) {
-                        $s = $db->table($set['relation_table'])->field($fk)->where($pk . '=' . $d[$pri])->all();
+                        $s = $db->table($set['relation_table'])->field($fk)->where($pk . '=' . $d[$pk])->getField($fk, true);
                         if (is_array($s)) {
-                            $_id = array();
-                            foreach ($s as $_s) {
-                                $_id[] = $_s[$fk];
-                            }
-                            $map[$fk]=array('IN',$_id);
+                            $map[$fk] = array('IN', $s);
                             $result[$n][$table] = $db->table($table)->where($map)->all();
                         }
                     }
                     break;
             }
         }
-        $this->error = $this->db->error;
-        $data = empty($result) ? null : $result;
-        $this->joinTable = array();
-        return $data;
+        return $result;
     }
 
-    //关联插入
-    public function insert($data = array(), $type = "INSERT")
+    /**
+     * 关联插入
+     * @param array $data 插入数据
+     * @return array|mixed|null
+     */
+    public function insert($data = array())
     {
         $this->data($data);
-        $data = $this->data;
-        if (empty($data)) {
-            $this->error = "没有任何数据用于INSERT！";
-            $this->joinTable = array();
-            $this->data = array();
-            return false;
-        }
-        $id = call_user_func(array($this->db, __FUNCTION__), $data, $type);
+        $InsertData = $this->data;
+        $pid = call_user_func(array($this->db, __FUNCTION__), $InsertData);
         //插入失败或者没有定义关联join属性
-        if (!$id || $this->joinTable === false || empty($this->join) || !is_array($this->join)) {
-            $this->error = $this->db->error;
-            $this->joinTable = array();
-            $this->data = array();
-            return $id;
+        if (!$pid) {
+            return $pid;
         }
-        $result_id = array();
-        $result_id[$this->table] = $id;
+        /**
+         * 记录操作结果
+         */
+        $result = array();
+        $result[$this->table] = $pid;
         //处理表关联
-        foreach ($this->join as $table => $set) {
-            //有无操作数据
-//            if (empty($data[$table]) || !is_array($data[$table])) continue;
-            //检测是否需要关联
-            if (!$this->check_join($table)) continue;
-            //验证关联定义
-            if (!$this->checkJoinSet($set)) continue;
-            $fk = $set['foreign_key'];
+        foreach ($this->relation as $table => $set) {
+            /**
+             * 从表没有更新数据时,不操作
+             */
+            if (empty($InsertData[$table])) {
+                continue;
+            }
+            /**
+             * 主表字段
+             */
             $pk = $set['parent_key'];
-            //关联表对象
+            /**
+             * 从表字段
+             */
+            $fk = $set['foreign_key'];
+            /**
+             * 从表模型
+             */
             $db = M($table);
             switch ($set['type']) {
-                //一对一
+                /**
+                 * 一对一与一对多
+                 * 从表不支持插入多条
+                 */
                 case HAS_ONE:
-                    $data[$table][$fk] = $id;
-                    $result_id[$table] = $db->insert($data[$table], $type);
-                    break;
                 case HAS_MANY:
-                    $result_id[$table] = array();
-                    foreach ($data[$table] as $d) {
-                        if (is_array($d)) {
-                            $d[$fk] = $id;
-                            $result_id[$table][] = $db->insert($d, $type);
-                        }
-                    }
+                    /**
+                     * 从表插件数据中添加主表主键值
+                     */
+                    $InsertData[$table][$fk] = $pid;
+                    $result[$table] = $db->insert($InsertData[$table]);
                     break;
                 case BELONGS_TO:
-                    $_id = $db->add($data[$table]);
-                    $db->table($this->table)->where($db->db->pri."=" . $id)->save(array($fk => $_id));
-                    $result_id[$table] = $_id;
+                    /**
+                     * 因为是BELONGS_TO关系
+                     * 先插入从表数据
+                     */
+                    $fid = $db->add($InsertData[$table]);
+                    /**
+                     * 更新主表数据
+                     */
+                    $db->table($this->table)->where($pk . "=" . $pid)->save(array($pk => $fid));
+                    $result[$table] = $fid;
                     break;
                 case MANY_TO_MANY:
-                    if (!isset($set['relation_table'])) break;
-                    //关联表
-                    $_id = $db->add($data[$table]);
-                    $result_id[$table] = $_id;
-                    //中间表
-                    $_r_id = $db->table($set['relation_table'])->insert(array($pk => $id, $fk => $_id), $type);
-                    $result_id[$set['relation_table']] = $_r_id;
+                    /**
+                     * 向从表中插入数据
+                     */
+                    $fid = $db->add($InsertData[$table]);
+                    $result[$table] = $fid;
+                    /**
+                     * 中间表插入数据
+                     */
+                    $db->table($set['relation_table'])->insert(array($pk => $pid, $fk => $fid));
             }
         }
-        $this->error = $this->db->error;
-        $result = empty($result_id) ? null : $result_id;
-        $this->joinTable = array();
-        $this->data = array();
         return $result;
     }
 
@@ -220,122 +190,100 @@ class RelationModel extends Model
     public function update($data = array())
     {
         $this->data($data);
-        $data = $this->data;
-        if (empty($data)) {
-            $this->error = "没有任何数据用于UPDATE！";
-            $this->joinTable = array();
-            $this->data = array();
-            return false;
+        $UpdateData = $this->data;
+        $status = call_user_func(array($this->db, __FUNCTION__), $UpdateData);
+        /**
+         * 主表更新
+         */
+        if (!$status) {
+            return $status;
         }
-        $stat = call_user_func(array($this->db, __FUNCTION__), $data);
-        //插入失败或者没有定义关联join属性
-        if (!$stat || $this->joinTable === false || empty($this->join) || !is_array($this->join)) {
-            $this->error = $this->db->error;
-            $this->joinTable = array();
-            $this->data = array();
-            return $stat;
-        }
-        $pri = $this->db->pri;
-        $where = preg_replace('@\s*WHERE@i', '', $this->db->opt_old['where']);
-        $_p = M($this->table)->field($pri)->where($where)->find();
-        $id = $_p[$pri];
-        $result_id = array();
-        $result_id[$this->table] = $stat;
+        /**
+         * 主表更新id
+         */
+        $pid = $UpdateData[$this->db->pri];
         //处理表关联
-        foreach ($this->join as $table => $set) {
-            //有无操作数据
-//            if (empty($data[$table]) || !is_array($data[$table])) continue;
-            //检测是否需要关联
-            if (!$this->check_join($table)) continue;
-            //验证关联定义
-            if (!$this->checkJoinSet($set)) continue;
+        foreach ($this->relation as $table => $set) {
+            /**
+             * 从表没有更新数据时不操作
+             */
+            if (empty($UpdateData[$table])) {
+                continue;
+            }
+            /**
+             * 从表字段
+             */
             $fk = $set['foreign_key'];
-            $pk = $set['parent_key'];
-            //关联表对象
+            /**
+             * 从表模型
+             */
             $db = M($table);
             switch ($set['type']) {
                 //一对一
                 case HAS_ONE:
-                    $data[$table][$fk] = $id;
-                    $db->where("$fk=$id")->save($data[$table]);
+                    $db->where("$fk=$pid")->save($UpdateData[$table]);
                     break;
                 case HAS_MANY:
-                    $db->where($fk . '=' . $id)->del();
-                    foreach ($data[$table] as $d) {
-                        if (is_array($d)) {
-                            $d[$fk] = $id;
-                            $db->replace($d);
-                        }
-                    }
-                    break;
-                CASE BELONGS_TO:
-                    //副表数据
-                    $temp = $db->table($this->table)->find($id);
-                    $data[$table][$pk] = $temp[$fk];
-                    $result_id[$table] = $db->save($data[$table]);
-                    break;
+                case BELONGS_TO:
                 case MANY_TO_MANY:
-                    if (!isset($set['relation_table'])) break;
-                    $result_id[$table] = $db->save($data[$table]);
+                    $db->save($UpdateData[$table]);
                     break;
             }
         }
-        $this->error = $this->db->error;
-        $result = empty($result_id) ? null : $result_id;
-        $this->joinTable = array();
-        $this->data = array();
-        return $result;
+        return $status;
     }
 
     //关联删除
     public function delete($data = array())
     {
-        //查找将删除的主表数据，用于副表删除时使用
-        $id = M($this->table)->where($data)->select();
-        if (!$id) {
-            $this->joinTable = array();
+        /**
+         * 主表删除的数据
+         */
+        $ParentData = M($this->table)->where($data)->select();
+        if (!$ParentData) {
             return true;
         }
-        $this->db->opt = $this->db->opt_old;
-        $stat = call_user_func(array($this->db, __FUNCTION__));
-        //插入失败或者没有定义关联join属性
-        if (!$stat || $this->joinTable === false || empty($this->join) || !is_array($this->join)) {
-            $this->error = $this->db->error;
-            $this->joinTable = array();
-            return $stat;
+        /**
+         * 删除主表数据
+         */
+        $status = call_user_func(array($this->db, __FUNCTION__), $data);
+        /**
+         * 删除主表失败
+         */
+        if (!$status) {
+            return $status;
         }
-        $result_id = array();
-        $result_id[$this->table] = $stat;
         //处理表关联
-        foreach ($this->join as $table => $set) {
-            //检测是否需要关联
-            if (!$this->check_join($table)) continue;
-            //验证关联定义
-            if (!$this->checkJoinSet($set)) continue;
-            $fk = $set['foreign_key'];
+        foreach ($this->relation as $table => $set) {
+            /**
+             * 主表字段
+             */
             $pk = $set['parent_key'];
-            //关联表对象
+            /**
+             * 从表字段
+             */
+            $fk = $set['foreign_key'];
+            /**
+             * 从表模型
+             */
             $db = M($table);
             switch ($set['type']) {
                 //一对一 与 一对多
                 case HAS_ONE:
                 case HAS_MANY:
-                    foreach ($id as $p) {
-                        $result_id[$table] = $db->where($fk . '=' . $p[$pk])->delete();
+                    foreach ($ParentData as $p) {
+                        $db->where($fk . '=' . $p[$pk])->delete();
                     }
                     break;
-                CASE BELONGS_TO:
+                case BELONGS_TO:
                     break;
                 case MANY_TO_MANY:
-                    foreach ($id as $p) {
-                        $result_id[$table] = $db->table($set['relation_table'])->where($pk . '=' . $p[$pk])->delete();
+                    foreach ($ParentData as $p) {
+                        $db->table($set['relation_table'])->where($pk . '=' . $p[$pk])->delete();
                     }
                     break;
             }
         }
-        $this->error = $this->db->error;
-        $result = empty($result_id) ? null : $result_id;
-        $this->joinTable = array();
-        return $result;
+        return $status;
     }
 }

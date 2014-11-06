@@ -5,7 +5,6 @@ return array(
     /********************************基本参数********************************/
     'CHARSET'                       => 'utf8',      //字符集
     'DEFAULT_TIME_ZONE'             => 'PRC',       //时区
-    'HTML_PATH'                     => 'h',         //静态HTML保存目录
     'LANGUAGE'                      => '',          //语言包
     'AUTH_KEY'                      => 'HouDunWang',//加密Key(如果使用建议定期更换AUTH_KEY)
     'CHECK_FILE_CASE'               => TRUE,        //windows区分大小写
@@ -13,7 +12,7 @@ return array(
     'FILTER_FUNCTION'               => array('htmlspecialchars','strip_tags'), //过滤函数会在Q(),date_format()等函数中使用
     'HTML_PATH'						=>'html/',//静态html文件储存目录
     /********************************数据库********************************/
-    'DB_DRIVER'                     => 'mysqli',    //数据库驱动
+    'DB_DRIVER'                     => 'Mysqli',    //数据库驱动
     'DB_CHARSET'                    => 'utf8',      //数据库字符集
     'DB_HOST'                       => '127.0.0.1', //数据库连接主机  如127.0.0.1
     'DB_PORT'                       => 3306,        //数据库连接端口
@@ -26,7 +25,7 @@ return array(
     /********************************储存********************************/
     'STORAGE_DRIVER'		=>'File',//储存驱动 支持File与Memcache储存
     /********************************表单TOKEN令牌********************************/
-    'TOKEN_ON'                      => FALSE,       //令牌状态
+    'TOKEN_ON'                      => FALSE,       //开启令牌
     'TOKEN_NAME'                    => '__TOKEN__', //令牌的表单name
     /********************************系统调试********************************/
     '404_URL'                       => '',          //404跳转url
@@ -70,7 +69,7 @@ return array(
     'route' => array(),                             //路由规则
     /********************************缓存********************************/
     'CACHE_TYPE'                    => 'file',      //类型:file memcache redis
-    'CACHE_TIME'                    => 0,        //全局默认缓存时间 0为永久缓存
+    'CACHE_TIME'                    => 0,        //全局默认缓存时间 0为永久缓存 -1 不缓存
     'CACHE_MEMCACHE'                => array(       //多个服务器设置二维数组
         'host'      => '127.0.0.1',     //主机
         'port'      => 11211,           //端口

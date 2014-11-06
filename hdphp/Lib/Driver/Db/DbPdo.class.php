@@ -24,7 +24,7 @@ class DbPdo extends Db
     private $PDOStatement = null; //预准备
     public $affectedRows; //受影响条数
 
-    function connectDb()
+    function connect()
     {
         if (is_null(self::$isConnect)) {
             $dsn = "mysql:host=" . C("DB_HOST") . ';dbname=' . C("DB_DATABASE");
@@ -72,10 +72,14 @@ class DbPdo extends Db
     //执行SQL没有返回值
     public function exe($sql)
     {
-        //查询参数初始化
+        /**
+         * 查询参数初始化
+         */
         $this->optInit();
-        //将SQL添加到调试DEBUG
-        $this->debug($sql);
+        /**
+         * 记录SQL语句
+         */
+        $this->recordSql($sql);
         //释放结果
         if (!$this->PDOStatement)
             $this->resultFree();
@@ -99,9 +103,16 @@ class DbPdo extends Db
     //发送查询 返回数组
     public function query($sql)
     {
-        $cache_time = $this->cacheTime ? $this->cacheTime : intval(C("CACHE_SELECT_TIME"));
+        /**
+         * 缓存时间没有设置时使用配置项缓存时间
+         */
+        $cacheTime = is_null($this->opt['cacheTime']) ? C("CACHE_SELECT_TIME") : $this->opt['cacheTime'];
+        /**
+         * 查询参数初始化
+         */
+        $this->optInit();
         $cacheName = $sql . APP . CONTROLLER . ACTION;
-        if ($cache_time >= 0) {
+        if ($cacheTime > -1) {
             $result = S($cacheName, FALSE, null, array("Driver" => "file", "dir" => APP_CACHE_PATH, "zip" => false));
             if ($result) {
                 //查询参数初始化
@@ -116,8 +127,8 @@ class DbPdo extends Db
         $list = $this->PDOStatement->fetchAll(PDO::FETCH_ASSOC);
         //受影响条数
         $this->affectedRows = count($list);
-        if ($list && $cache_time >= 0 && count($list) <= C("CACHE_SELECT_LENGTH")) {
-            S($cacheName, $list, $cache_time, array("Driver" => "file", "dir" => APP_CACHE_PATH, "zip" => false));
+        if ($list && $cacheTime >= 0 && count($list) <= C("CACHE_SELECT_LENGTH")) {
+            S($cacheName, $list, $cacheTime, array("Driver" => "file", "dir" => APP_CACHE_PATH, "zip" => false));
         }
         return empty($list) ? array() : $list;
     }

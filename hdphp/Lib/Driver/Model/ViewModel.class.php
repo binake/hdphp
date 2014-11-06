@@ -18,66 +18,152 @@
  */
 class ViewModel extends Model
 {
+    /**
+     * 视图关联表关系
+     * @var array
+     */
     public $view = array();
-    public $joinTable = array();
+    /**
+     * 这些方法需要改变驱动Db的相应opt['table']与opt['field']等属性值
+     * @var array
+     */
+    private $queryMethod = array(
+        'select', 'find', 'count', 'max', 'min', 'avg', 'sum'
+    );
 
-    //设置关联表
-    public function relation($joinTable = array())
+    /**
+     * 魔术方法用于动态执行Db类中的方法
+     * @param $method
+     * @param $param
+     * @return mixed
+     */
+    public function __call($method, $param)
     {
-        if (is_string($joinTable)) {
-            $this->joinTable = explode(',', $joinTable);
+        if (in_array($method, $this->queryMethod)) {
+            $this->setDriverOption();
         }
-        return $this;
+        /**
+         * 调用父类方法完成查询操作
+         */
+        return parent::__call($method, $param);
     }
 
-    //查询
-    public function select($data = array())
+    /**
+     * 设置查询表名与字段
+     * 就是设置驱动Db的opt属性
+     */
+    private function setDriverOption()
     {
-        if (!empty($this->view)) {
-            $from = $field = '';
-            foreach ($this->view as $table => $set) {
-                //关联指定表
-                if (!empty($this->joinTable) && !in_array($table, $this->joinTable)) continue;
-                //表别名
-                $as = isset($set['_as']) ? $set['_as'] : $table;
-                //FROM部分
-                $from .= C('DB_PREFIX') . $table . ' ' . $as;
-                //关联方式
-                if (isset($set['_on'])) {
-                    $on = preg_replace('@__(\w+)__@', '\1', $set['_on']);
-                    $from .= " ON $on ";
-                }
-                //_TYPE关联方式
-                if (isset($set['_type'])) {
-                    $from .= ' ' . strtoupper($set['_type']) . ' JOIN ';
-                }
+        $table = $this->getTable();
+        $field = $this->getField();
+        $this->db->opt['table'] = $table;
+        $this->db->opt['field'] = $field;
+    }
+
+    /**
+     * 查找满足条件的一条记录
+     * @param string $where 条件,如果为数字查询主键值
+     * @return mixed
+     */
+    public function find($where = '')
+    {
+        $result = $this->select($where);
+        return is_array($result) ? current($result) : $result;
+    }
+
+    /**
+     * 查询结果
+     * @param string $where 条件
+     * @return mixed
+     */
+    public function select($where = '')
+    {
+        $this->setDriverOption();
+        $this->trigger && method_exists($this, '__before_select') && $this->__before_select();
+        $return = $this->db->select($where);
+        $this->trigger && method_exists($this, '__after_select') && $this->__after_select($return);
+        return $return;
+    }
+
+    /**
+     * 获得驱动表
+     * 获得用于更改DbModel::$table值
+     * 实例化时更改Db::$table值
+     * 调用relation方法时更改Db::opt['table']值,用于本次查询临时改表
+     * @return mixed
+     */
+    private function getTable()
+    {
+        /**
+         * 没有定义view属性时不做任何处理
+         * 事实上ViewModel操作全局依赖View属性定义
+         */
+        if (empty($this->view)) {
+            return $this->db->opt['table'];
+        }
+        $from = '';
+        foreach ($this->view as $table => $set) {
+            /**
+             * 表名设置
+             */
+            $as = isset($set['_as']) ? $set['_as'] : $table;
+            $from .= C('DB_PREFIX') . $table . ' ' . $as;
+            /**
+             * 关联条件
+             */
+            if (isset($set['_on'])) {
+                $from .= " ON  " . $set['_on'];
+            }
+            /**
+             * _TYPE关联方式
+             */
+            if (isset($set['_type'])) {
+                $from .= ' ' . strtoupper($set['_type']) . ' JOIN ';
+            }
+        }
+        /**
+         * 去除表后面关联操作符如INNER JOIN
+         */
+        return preg_replace('@(INNER|RIGHT|LEFT)\s*JOIN\s*$@', '', $from);
+
+    }
+
+    /**
+     * 设置查询字段
+     */
+    private function getField()
+    {
+        /**
+         * 字段设置
+         * 如果链式操作中调用了field()方法,则不执行以下操作
+         */
+        if (empty($this->view) || ($this->db->opt['field'] != '*')) {
+            return $this->db->opt['field'];
+        }
+        $field = array();
+        foreach ($this->view as $table => $set) {
+            //表名
+            $as = isset($set['_as']) ? $set['_as'] : $table;
+            /**
+             * 当前表所有字段
+             */
+            $fieldData = array_keys($this->db->getAllField($table));
+            /**
+             * 设置别名字段
+             */
+            foreach ($set as $name => $f) {
                 /**
-                 * 字段设置
-                 * 如果链式操作中调用了field()方法,则不执行以下操作
+                 * 特定关键词不处理
                  */
-                if (empty($this->db->opt['field'])) {
-                    foreach ($set as $name => $f) {
-                        /**
-                         * 特定关键词不处理
-                         */
-                        if (is_string($name) && in_array($name, array('_type', '_on', '_as'))) {
-                            continue;
-                        }
-                        $fieldStr = is_string($name) ? $as . '.' . $name . ' AS ' . $f : $f;
-                        $field .= $fieldStr . ",";
-                    }
+                if (in_array($name, array('_type', '_on', '_as'))) {
+                    continue;
+                }
+                if (($index = array_search($name, $fieldData)) !== false) {
+                    $field[] = $as . '.' . $name . ' AS ' . $f;
                 }
             }
-            //设置字段
-            if ($field) {
-                $this->field('*,' . substr($field, 0, -1));
-            }
-            if (substr($from, -11) == 'INNER JOIN ') $from = substr($from, 0, -11);
-            if (substr($from, -11) == 'RIGHT JOIN ') $from = substr($from, 0, -11);
-            if (substr($from, -10) == 'LEFT JOIN ') $from = substr($from, 0, -10);
-            $this->db->opt['table'] = $from;
-            $this->joinTable = array();
         }
-        return parent::select($data);
+        return '*,' . implode(',', $field);
     }
+
 }

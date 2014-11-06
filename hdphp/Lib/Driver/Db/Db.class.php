@@ -20,16 +20,25 @@
 abstract class Db implements DbInterface
 {
 
-    protected $table = NULL; //表名
+    public $table = NULL; //表名
+    public $pri = null; //默认表主键
     public $fieldData; //字段数组
     public $lastQuery; //最后发送的查询结果集
-    public $pri = null; //默认表主键
-    public $opt = array(); //SQL 操作
-    public $opt_old = array(); //上次操作参数
+    public $opt = array(
+        'table' => null,
+        'pri' => null,
+        'field' => '',
+        'fieldData' => array(),
+        'where' => '',
+        'like' => '',
+        'group' => '',
+        'having' => '',
+        'order' => '',
+        'limit' => '',
+        'cacheTime' => null//查询缓存时间
+    ); //SQL 操作
     public $lastSql; //最后发送的SQL
     public $error = NULL; //错误信息
-    protected $cacheTime = NULL; //查询操作缓存时间单位秒
-    protected $dbPrefix; //表前缀
 
     /**
      * 将eq等替换为标准的SQL语法
@@ -45,43 +54,66 @@ abstract class Db implements DbInterface
      * 数据库连接
      * 根据配置文件获得数据库连接对象
      * @param string $table
+     * @param bool $full 全表名
      * @return Object   连接对象
      */
-    public function connect($table)
+    public function link($table, $full)
     {
         //通过数据驱动如MYSQLI连接数据库
-        if ($this->connectDb()) {
+        if ($this->connect()) {
             if ($table) {
-                $this->dbPrefix = C("DB_PREFIX");
-                $this->table($table);
-                $this->fieldData = $this->opt['fieldData'];
+                /**
+                 * 初始化表
+                 */
+                $this->table($table, $full);
+                /**
+                 * 数据表
+                 */
                 $this->table = $this->opt['table'];
+                /**
+                 * 表字段数据
+                 */
+                $this->fieldData = $this->opt['fieldData'];
+                /**
+                 * 表主键
+                 */
                 $this->pri = $this->opt['pri'];
+
             }
-            //初始化关联参数
-            $this->optInit();
             return $this->link;
         } else {
-            halt("数据库连接出错了请检查数据库配置");
+            $this->error('数据库连接错误');
         }
     }
 
     /**
-     * 初始化表字段与主键及发送字符集
-     * @param string $table 表名
-     * @return array
+     * 初始化表字段与主键
+     * @param $table
+     * @param $full
+     * @return bool
      */
-    public function table($table)
+    public function table($table, $full = false)
     {
+        /**
+         * 初始化opt参数
+         */
         $this->optInit();
-        if ($table) {
-            $data = $this->getTableFields($table);
-            $this->opt['table'] = $table;
-            $this->opt['pri'] = $data['pri'];
-            $this->opt['fieldData'] = $data['fieldData'];
-            return true;
-        }
-        return false;
+
+        /**
+         * 字段集
+         */
+        $fieldData = $this->getAllField($table, $full);
+
+        /**
+         * 表主键
+         */
+        $pri = $this->getPrimaryKey($table, $full);
+        /**
+         * 设置选项
+         */
+        $this->opt['table'] = $full ? $table : C('DB_PREFIX') . $table;
+        $this->opt['fieldData'] = $fieldData;
+        $this->opt['pri'] = $pri;
     }
 
     /**
@@ -89,10 +121,17 @@ abstract class Db implements DbInterface
      * 查询表结构获得所有字段信息，用于字段缓存
      * @access private
      * @param string $table
+     * @param bool $full
      * @return array
      */
-    public function getTableFields($table)
+    public function getAllField($table, $full = false)
     {
+        /**
+         * 不是全表名是添加表前缀
+         */
+        if (!$full) {
+            $table = C('DB_PREFIX') . $table;
+        }
         $name = C('DB_DATABASE') . '.' . $table;
         //字段缓存
         if (!DEBUG && F($name, false, APP_TABLE_PATH)) {
@@ -100,7 +139,7 @@ abstract class Db implements DbInterface
         } else {
             $sql = "show columns from `$table`";
             if (!$result = $this->query($sql)) {
-                halt("表{$table}不存在");
+                return false;
             }
             $fieldData = array();
             foreach ($result as $res) {
@@ -113,29 +152,42 @@ abstract class Db implements DbInterface
                 $f ['extra'] = $res ['Extra'];
                 $fieldData [$res ['Field']] = $f;
             }
-            DEBUG && F($name, $fieldData, APP_TABLE_PATH);
+            DEBUG || F($name, $fieldData, APP_TABLE_PATH);
         }
-        $pri = '';
-        foreach ($fieldData as $v) {
-            if ($v['key']) $pri = $v['field'];
-        }
-        return array('table' => $table, 'pri' => $pri, 'fieldData' => $fieldData);
+        return $fieldData;
     }
 
     /**
-     * 查询操作归位
+     * 获得表主键字段
+     * @param string $table 数据表
+     * @param bool $full
+     * @return bool
+     */
+    private function getPrimaryKey($table, $full = false)
+    {
+        $fieldData = $this->getAllField($table, $full);
+        $pri = '';
+        foreach ($fieldData as $field => $v) {
+            if ($v['key'] == 1) {
+                $pri = $field;
+            }
+        }
+        return $pri;
+    }
+
+    /**
+     * 查询初始化
      * @access public
      * @return void
      */
-    public function optInit()
+    protected function optInit()
     {
-        $this->opt_old = $this->opt;
-        $this->cacheTime = NULL; //SELECT查询缓存时间
+        $this->cacheTime = -1; //SELECT查询缓存时间
         $this->error = NULL;
         $opt = array(
             'table' => $this->table,
             'pri' => $this->pri,
-            'field' => '',
+            'field' => '*',
             'fieldData' => $this->fieldData,
             'where' => '',
             'like' => '',
@@ -143,10 +195,54 @@ abstract class Db implements DbInterface
             'having' => '',
             'order' => '',
             'limit' => '',
-            'in' => '',
-            'cache' => ''
+            'cacheTime' => null,//查询缓存时间
         );
         return $this->opt = array_merge($this->opt, $opt);
+    }
+
+    /**
+     * 查找满足条件的所有记录(一维数组)
+     * 示例：$Db->getField("username")
+     */
+    public function getField($field, $returnAll = false)
+    {
+        /**
+         * 设置查询字段
+         */
+        $this->field($field);
+        $result = $this->select();
+        if ($result) {
+            //字段数组
+            $field = explode(',', str_replace(' ', '', $field));
+            //如果有多个字段时，返回多维数组并且第一个字段值做为KEY使用
+            switch (count($field)) {
+                case 1:
+                    //只有一个字段，只返回一个字段值
+                    if ($returnAll) {
+                        $data = array();
+                        foreach ($result as $v) {
+                            $data[] = current($v);
+                        }
+                        return $data;
+                    } else {
+                        return current($result[0]);
+                    }
+                case 2:
+                    $data = array();
+                    foreach ($result as $v) {
+                        $data[$v[$field[0]]] = $v[$field[1]];
+                    }
+                    return $data;
+                default:
+                    $data = array();
+                    foreach ($result as $v) {
+                        $data[$v[$field[0]]] = $v;
+                    }
+                    return $data;
+            }
+        } else {
+            return array();
+        }
     }
 
     /**
@@ -154,16 +250,15 @@ abstract class Db implements DbInterface
      * @param string $where
      * @return array|string
      */
-    public function select($where)
+    public function select($where = '')
     {
-        //设置条件
-        $where && $this->where($where);
-        //去除WHERE尾部AND OR
-        $this->parseWhereLogic($this->opt['where']);
-        //设置字段
-        if (empty($this->opt['field'])) {
-            $this->opt['field'] = ' * ';
-        }
+        /**
+         * 有查询条件时
+         */
+        $this->where($where);
+        /**
+         * 组合查询SQL
+         */
         $sql = 'SELECT ' . $this->opt['field'] . ' FROM ' . $this->opt['table'] .
             $this->opt['where'] . $this->opt['group'] . $this->opt['having'] .
             $this->opt['order'] . $this->opt['limit'];
@@ -172,14 +267,19 @@ abstract class Db implements DbInterface
 
     /**
      * SQL中的REPLACE方法，如果存在与插入记录相同的主键或unique字段进行更新操作
-     * @param array $data
-     * @param string $type
+     * @param array $data 添加数据
+     * @param string $type INSERT REPLACE
      * @return array|bool
      */
-    public function insert($data, $type = 'INSERT')
+    public function insert($data = array(), $type = 'INSERT')
     {
         $value = $this->formatField($data);
-        empty($value) && halt("没有任何数据用于 INSERT");
+        /**
+         * 更新数据不能为空
+         */
+        if (!$value) {
+            return false;
+        }
         $sql = $type . " INTO " . $this->opt['table'] . "(" . implode(',', $value['fields']) . ")" .
             "VALUES (" . implode(',', $value['values']) . ")";
         return $this->exe($sql);
@@ -191,39 +291,49 @@ abstract class Db implements DbInterface
      * @param  mixed $data
      * @return mixed
      */
-    public function update($data)
+    public function update($data = array())
     {
-        //验证条件
+        /**
+         * 更改必须有条件
+         * 如果更新数据中有主键,则以主键做为条件使用
+         */
         if (empty($this->opt['where'])) {
             if (isset($data[$this->opt['pri']])) {
                 $this->opt['where'] = " WHERE " . $this->opt['pri'] . " = " . intval($data[$this->opt['pri']]);
             } else {
-                halt('UPDATE更新语句必须输入条件');
+                return false;
             }
         }
+        /**
+         * 检测更新数据字段合法性
+         * 与字段安全处理
+         */
         $data = $this->formatField($data);
-        empty($data) && halt("没有任何数据用于 UPDATE");
+        /**
+         * 没有更新数据
+         */
+        if (empty($data)) {
+            return false;
+        }
         $sql = "UPDATE " . $this->opt['table'] . " SET ";
         foreach ($data['fields'] as $n => $field) {
             $sql .= $field . "=" . $data['values'][$n] . ',';
         }
-        //移除WHERE AND OR
-        $this->parseWhereLogic($this->opt['where']);
         $sql = trim($sql, ',') . $this->opt['where'] . $this->opt['limit'];
         return $this->exe($sql);
     }
 
     /**
-     * 删除方法
-     * @param $data
+     * 删除数据
+     * @param string $where 删除条件
      * @return bool
      */
-    public function delete($data = array())
+    public function delete($where = '')
     {
-        $data && $this->where($data);
-        empty($this->opt['where']) && halt('DELETE删除语句必须输入条件');
-        //移除WHERE AND OR
-        $this->parseWhereLogic($this->opt['where']);
+        $this->where($where);
+        if (empty($this->opt['where'])) {
+            return false;
+        }
         $sql = "DELETE FROM " . $this->opt['table'] . $this->opt['where'] . $this->opt['limit'];
         return $this->exe($sql);
     }
@@ -248,14 +358,14 @@ abstract class Db implements DbInterface
         return $data;
     }
 
-    //移除where结尾的OR AND
-    private function parseWhereLogic(&$where, $action = 'remove')
+    /**
+     * 检测是否为表字段
+     * @param string $field 字段名
+     * @return bool
+     */
+    public function isField($field)
     {
-        if ($action == 'remove') {
-            $where = preg_replace('/(XOR|OR|AND)\s*$/i', '', $where);
-        } else {
-            $where = preg_match('/(XOR|OR|AND)\s*$/i', $where) ? $where : $where . ' AND ';
-        }
+        return isset($this->opt['fieldData'][$field]);
     }
 
     /**
@@ -266,13 +376,16 @@ abstract class Db implements DbInterface
     public function where($opt)
     {
         $where = '';
-        if (empty($opt)) return;
+        /**
+         * 没有查询条件
+         */
+        if (empty($opt)) {
+            return;
+        }
         if (is_numeric($opt)) {
             $where .= ' ' . $this->opt['pri'] . "=$opt ";
-            $this->parseWhereLogic($where);
         } else if (is_string($opt)) {
             $where .= " $opt ";
-            $this->parseWhereLogic($where, 'add');
         } else if (is_array($opt)) {
             foreach ($opt as $key => $set) {
                 if ($key[0] == '_') {
@@ -282,13 +395,15 @@ abstract class Db implements DbInterface
                             $this->where($q);
                             break;
                         case '_string':
+                            $set = preg_match('@(AND|OR|XOR)\s*$@i', $set) ? $set : $set . ' AND ';
                             $where .= $set;
-                            $this->parseWhereLogic($where, 'add');
                             break;
                     }
                 } else if (is_numeric($key)) { //参数为字符串
+                    if (!preg_match('@(AND|OR|XOR)\s*$@i', $set)) {
+                        $set .= isset($opt['_logic']) ? " {$opt['_logic']} " : ' AND ';
+                    }
                     $where .= $set;
-                    $this->parseWhereLogic($where, 'add');
                 } else if ($this->isField($key)) { //参数为数组
                     if (!is_array($set)) {
                         $logic = isset($opt['_logic']) ? " {$opt['_logic']} " : ' AND '; //连接方式
@@ -305,9 +420,9 @@ abstract class Db implements DbInterface
                         if (is_array(current($set))) {
                             foreach ($set as $exp) {
                                 if (is_array($exp)) {
-                                    $exp['_logic'] = strtoupper($logic);
                                     $t[$key] = $exp;
                                     $this->where($t);
+                                    $this->opt['where'] .= strtoupper($logic);
                                 }
                             }
                         } else {
@@ -372,35 +487,59 @@ abstract class Db implements DbInterface
                 }
             }
         }
-        if (empty($this->opt['where']) && !empty($where)) {
-            $this->opt['where'] = ' WHERE ';
+        if (!empty($where)) {
+            /**
+             * 删除尾部OR AND
+             */
+            $where = preg_replace('@(OR|AND|XOR)\s*$@i', '', $where);
+            if (empty($this->opt['where'])) {
+                /**
+                 * 第一次设置where
+                 */
+                $this->opt['where'] = " WHERE " . $where;
+            } else if (preg_match('@(OR|AND|XOR)\s*$@i', $this->opt['where'])) {
+                /**
+                 * 有连接属性时使用连接属性
+                 */
+                $this->opt['where'] .= $where;
+            } else {
+                $this->opt['where'] .= ' AND ' . $where;
+            }
+        } else {
+            $this->opt['where'] = preg_replace('@(OR|AND|XOR)\s*$@i', '', $this->opt['where']);
         }
-        $this->opt['where'] .= $where;
     }
 
     /**
-     * 字段集
+     * 查询字段处理
      * @param mixed $data
      * @param boolean $exclude 排除字段
      * @return mixed
      */
     public function field($data, $exclude = false)
     {
+        /**
+         * 参数为空时,不进行操作
+         */
+        if (empty($data)) {
+            return;
+        }
         //字符串时转为数组
-        if (is_string($data)) {
+        if (!is_array($data)) {
             $data = explode(",", $data);
         }
         //排除字段
         if ($exclude) {
             $_data = $data;
-            $data = array_keys($this->opt['fieldData']);
+            $fieldData = $this->opt['fieldData'];
             foreach ($_data as $name => $field) {
-                if (in_array($field, $data)) {
-                    unset($data[$name]);
+                if (isset($this->opt['fieldData'][$field])) {
+                    unset($fieldData[$field]);
                 }
             }
+            $data = array_keys($fieldData);
         }
-        $field = empty($this->opt['field']) ? '' : $this->opt['field'] . ',';
+        $field = '';
         foreach ($data as $name => $d) {
             if (is_string($name)) {
                 $field .= $name . ' AS ' . $d . ",";
@@ -408,17 +547,25 @@ abstract class Db implements DbInterface
                 $field .= $d . ',';
             }
         }
-        return $this->opt['field'] = substr($field, 0, -1);
+        $this->opt['field'] = substr($field, 0, -1);
     }
 
     /**
-     * 验证字段是否全法
-     * @param $field 字段名
-     * @return bool
+     * 删除表中所有数据
+     * @param $table 数据表
+     * @return mixed
      */
-    protected function isField($field)
+    public function delAll($table)
     {
-        return is_string($field) && isset($this->opt['fieldData'][$field]);
+        return $this->exe("DELETE FROM " . C('DB_PREFIX') . $table);
+    }
+
+
+    //join多表关联
+    public function join($join)
+    {
+        $join = preg_replace('@__(\w+)__@', C('DB_PREFIX') . '\1', $join);
+        $this->opt['table'] = $join;
     }
 
     /**
@@ -461,22 +608,191 @@ abstract class Db implements DbInterface
     /**
      * 设置查询缓存时间
      * @param $time
+     * @return number
      */
     public function cache($time = -1)
     {
-        $this->cacheTime = is_numeric($time) ? $time : -1;
+        $this->opt['cacheTime'] = $time;
+    }
+
+    /**
+     * 判断表中字段是否在存在
+     * @param string $fieldName 字段名
+     * @param string $table 表名(不带表前缀)
+     * @return bool
+     */
+    public function fieldExists($fieldName, $table)
+    {
+        $field = $this->query("DESC " . C("DB_PREFIX") . $table);
+        foreach ($field as $f) {
+            if (strtolower($f['Field']) == strtolower($fieldName)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * 判断表是否存在
+     * @param $tableName 表名
+     * @return bool
+     */
+    public function tableExists($tableName)
+    {
+        $tableArr = $this->query("SHOW TABLES");
+        foreach ($tableArr as $k => $table) {
+            $tableTrue = $table['Tables_in_' . C('DB_DATABASE')];
+            if (strtolower($tableTrue) == strtolower(C('DB_PREFIX') . $tableName)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * 统计
+     */
+    public function count($field = '*')
+    {
+        $sql = "SELECT count($field) AS c FROM " . $this->opt['table'];
+        $data = $this->query($sql);
+        return $data ? $data[0]['c'] : $data;
+    }
+
+    /**
+     * 求最大值
+     */
+    public function max($field)
+    {
+        $sql = "SELECT max($field) AS c FROM " . $this->opt['table'];
+        $data = $this->query($sql);
+        return $data ? $data[0]['c'] : $data;
+    }
+
+    /**
+     * 求最小值
+     */
+    public function min($field)
+    {
+        $sql = "SELECT min($field) AS c FROM " . $this->opt['table'] . $this->opt['where'] . $this->opt['limit'];
+        $data = $this->query($sql);
+        return $data ? $data[0]['c'] : $data;
+    }
+
+    /**
+     * 求平均值
+     */
+    public function avg($field)
+    {
+        $sql = "SELECT avg($field) AS c FROM " . $this->opt['table'];
+        $data = $this->query($sql);
+        return $data ? $data[0]['c'] : $data;
+    }
+
+    /**
+     * SQL中的SUM计算
+     */
+    public function sum($field)
+    {
+        $sql = "SELECT sum($field) AS c FROM " . $this->opt['table'];
+        $data = $this->query($sql);
+        return $data ? $data[0]['c'] : $data;
+    }
+
+    /**
+     * 字段值增加
+     * 示例：$Db->dec("price","id=20",188)
+     * 将id为20的记录的price字段值增加188
+     * @param $field 字段名
+     * @param $where 条件
+     * @param int $step 增加数
+     * @return mixed
+     */
+    public function inc($field, $where, $step = 1)
+    {
+        $sql = "UPDATE " . $this->opt['table'] . " SET " . $field . '=' . $field . '+' . $step . " WHERE " . $where;
+        return $this->exe($sql);
+    }
+
+    /**
+     * 减少字段值
+     * @param $field
+     * @param $where
+     * @param int $step
+     * @return mixed
+     */
+    public function dec($field, $where, $step = 1)
+    {
+        $sql = "UPDATE " . $this->opt['table'] . " SET " . $field . '=' . $field . '-' . $step . " WHERE " . $where;
+        return $this->exe($sql);
+    }
+
+    /**
+     * 创建数据库
+     * @param $database
+     * @param string $charset
+     * @return mixed
+     */
+    public function createDatabase($database, $charset = "utf8")
+    {
+        return $this->exe("CREATE DATABASE IF NOT EXISTS `$database` CHARSET " . $charset);
+    }
+
+    /**
+     * 删除表
+     * @param string $table 表名
+     * @return mixed
+     */
+    public function dropTable($table)
+    {
+        return $this->exe("DROP TABLE IF EXISTS `" . C('DB_PREFIX') . $table . "`");
+    }
+
+    //修复数据表
+    public function repair($table)
+    {
+        return $this->exe("REPAIR TABLE `" . C('DB_PREFIX') . $table . "`");
+    }
+
+    /**
+     * 修改表名
+     * @param $old 旧表名
+     * @param $new 新表名
+     */
+    public function rename($old, $new)
+    {
+        return $this->exe("ALTER TABLE `" . C('DB_PREFIX') . $old . "` RENAME " . C('DB_PREFIX') . $new);
+    }
+
+    /**
+     * 优化表解决表碎片问题
+     * @param array $table 表
+     * @return bool
+     */
+    public function optimize($table)
+    {
+        $this->exe("OPTIMIZE TABLE `" . C('DB_PREFIX') . $table . "`");
+    }
+
+    /**
+     * 清空表
+     * @param $table
+     * @return mixed
+     */
+    public function truncate($table)
+    {
+        return $this->exe("TRUNCATE TABLE `" . C('DB_PREFIX') . $table . "`");
     }
 
     /**
      * 判断表名是否存在
      * @param $table 表名
-     * @param bool $full 是否加表前缀
      * @return bool
      */
-    public function isTable($table, $full = true)
+    public function isTable($table)
     {
-        //不为全表名时加表前缀
-        if (!$full) $table = C('DB_PREFIX') . $table;
+        //添加表前缀
+        $table = C('DB_PREFIX') . $table;
         $info = $this->query('show tables');
         foreach ($info as $n => $d) {
             if ($table == current($d)) {
@@ -492,7 +808,7 @@ abstract class Db implements DbInterface
      */
     public function getLastSql()
     {
-        return $this->lastSql;
+        return current(Debug::$sqlExeArr);
     }
 
     /**
@@ -505,13 +821,12 @@ abstract class Db implements DbInterface
     }
 
     /**
-     * 将查询SQL压入调试数组 show语句不保存
+     * 将查询SQL压入调试数组
      * @param void
      */
-    protected function debug($sql)
+    protected function recordSql($sql)
     {
-        $this->lastSql = $sql;
-        if (DEBUG && !preg_match("/^\s*show/i", $sql)) {
+        if (!preg_match('/\s*show /', $sql)) {
             Debug::$sqlExeArr[] = $sql;
         }
     }
@@ -547,7 +862,7 @@ abstract class Db implements DbInterface
             $arr['table'][$t['Name']]['charset'] = $charset[0];
             $arr['table'][$t['Name']]['datafree'] = $t['Data_free'];
             $arr['table'][$t['Name']]['size'] = $t['Data_free'] + $t['Data_length'];
-            $data = $this->getTableFields($t['Name']);
+            $data = $this->getAllField($t['Name']);
             $arr['table'][$t['Name']]['field'] = $data['fieldData'];
             $arr['table'][$t['Name']]['primarykey'] = $data['pri'];
             $arr['table'][$t['Name']]['autoincrement'] = $t['Auto_increment'] ? $t['Auto_increment'] : '';
