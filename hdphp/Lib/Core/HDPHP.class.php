@@ -82,8 +82,8 @@ final class HDPHP
         if (is_array($files) && !empty($files)) {
             foreach ($files as $file) {
                 require_array(array(
-                    APP_LIB_PATH . $file,
-                    MODULE_LIB_PATH . $file
+                    MODULE_LIB_PATH . $file,
+                    APP_LIB_PATH . $file
                 )) || require_cache($file);
             }
         }

@@ -286,6 +286,15 @@ abstract class Db implements DbInterface
     }
 
     /**
+     * REPLACE更新表
+     * @param $data
+     */
+    public function replace($data)
+    {
+        $this->insert($data, 'REPLACE');
+    }
+
+    /**
      * 更新数据
      * @access      public
      * @param  mixed $data
@@ -729,8 +738,8 @@ abstract class Db implements DbInterface
 
     /**
      * 创建数据库
-     * @param $database
-     * @param string $charset
+     * @param $database 数据库名
+     * @param string $charset 字符集
      * @return mixed
      */
     public function createDatabase($database, $charset = "utf8")
@@ -741,14 +750,18 @@ abstract class Db implements DbInterface
     /**
      * 删除表
      * @param string $table 表名
-     * @return mixed
+     * @return bool
      */
     public function dropTable($table)
     {
         return $this->exe("DROP TABLE IF EXISTS `" . C('DB_PREFIX') . $table . "`");
     }
 
-    //修复数据表
+    /**
+     * 修复数据表
+     * @param $table
+     * @return bool
+     */
     public function repair($table)
     {
         return $this->exe("REPAIR TABLE `" . C('DB_PREFIX') . $table . "`");
@@ -775,7 +788,7 @@ abstract class Db implements DbInterface
     }
 
     /**
-     * 清空表
+     * 清空表数据
      * @param $table
      * @return mixed
      */
@@ -860,32 +873,50 @@ abstract class Db implements DbInterface
             $charset = $arr['table'][$t['Name']]['collation'] = $t['Collation'];
             $charset = explode("_", $charset);
             $arr['table'][$t['Name']]['charset'] = $charset[0];
-            $arr['table'][$t['Name']]['datafree'] = $t['Data_free'];
-            $arr['table'][$t['Name']]['size'] = $t['Data_free'] + $t['Data_length'];
-            $data = $this->getAllField($t['Name']);
-            $arr['table'][$t['Name']]['field'] = $data['fieldData'];
-            $arr['table'][$t['Name']]['primarykey'] = $data['pri'];
+            $arr['table'][$t['Name']]['dataFree'] = $t['Data_free'];//碎片大小
+            $arr['table'][$t['Name']]['indexSize'] = $t['Index_length'];//索引大小
+            $arr['table'][$t['Name']]['dataSize'] = $t['Data_free'];
+            $arr['table'][$t['Name']]['totalSize'] = $t['Data_free'] + $t['Data_length'] + $t['Index_length'];
+            $fieldData = $this->getAllField($t['Name'],true);
+            $arr['table'][$t['Name']]['field'] = $fieldData;
+            $arr['table'][$t['Name']]['primaryKey'] = $this->getPrimaryKey($t['Name'],true);
             $arr['table'][$t['Name']]['autoincrement'] = $t['Auto_increment'] ? $t['Auto_increment'] : '';
-            $arr['total_size'] += $arr['table'][$t['Name']]['size'];
-            $arr['total_row']++;
+            $arr['total_size'] += $arr['table'][$t['Name']]['dataSize'];
+            $arr['total_row'] += $t['Rows'];
         }
         return $arr;
     }
 
     /**
-     * 获得数据库或表大小
+     * 获得数据库大小
+     * @return int
      */
-    public function getSize($table)
+    public function getDataBaseSize()
+    {
+        $sql = "show table status from " . C("DB_DATABASE");
+        $data = $this->query($sql);
+        $size = 0;
+        foreach ($data as $v) {
+            $size += $v['Data_length'] + $v['Data_length'] + $v['Index_length'];;
+        }
+        return $size;
+    }
+
+    /**
+     * 获得数据表大小
+     * @param $table 表名
+     * @return mixed
+     */
+    public function getTableSize($table)
     {
         $table = C('DB_PREFIX') . $table;
         $sql = "show table status from " . C("DB_DATABASE");
-        $row = $this->query($sql);
-        $size = 0;
-        foreach ($row as $v) {
-            if (in_array(strtolower($v['Name']), $table)) {
-                $size = $v['Data_length'] + $v['Index_length'];
+        $data = $this->query($sql);
+        foreach ($data as $v) {
+            if ($v['Name'] == $table) {
+                return $v['Data_length'] + $v['Index_length'];
             }
         }
-        return $size;
+        return 0;
     }
 }

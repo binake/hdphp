@@ -423,7 +423,7 @@ class Model
     {
         $this->trigger && method_exists($this, '__before_insert') && $this->__before_insert($data);
         $this->data($data);
-        $return = $this->db->insert($this->data, 'INSERT');
+        $return = $this->db->insert($this->data);
         $this->trigger && method_exists($this, '__after_insert') && $this->__after_insert($return);
         return $return;
     }
@@ -438,7 +438,7 @@ class Model
     {
         $this->trigger && method_exists($this, '__before_insert') && $this->__before_insert($data);
         $this->data($data);
-        $return = $this->db->insert($this->data, 'REPLACE');
+        $return = $this->db->replace($this->data);
         $this->trigger && method_exists($this, '__after_insert') && $this->__after_insert($return);
         return $return;
     }
