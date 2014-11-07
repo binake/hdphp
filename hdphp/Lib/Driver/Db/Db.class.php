@@ -663,7 +663,8 @@ abstract class Db implements DbInterface
      */
     public function count($field = '*')
     {
-        $sql = "SELECT count($field) AS c FROM " . $this->opt['table'];
+        $sql = "SELECT count($field) AS c FROM " . $this->opt['table'] .$this->opt['where'] . $this->opt['group']
+            . $this->opt['having'] .$this->opt['order'] . $this->opt['limit'];
         $data = $this->query($sql);
         return $data ? $data[0]['c'] : $data;
     }
@@ -673,7 +674,8 @@ abstract class Db implements DbInterface
      */
     public function max($field)
     {
-        $sql = "SELECT max($field) AS c FROM " . $this->opt['table'];
+        $sql = "SELECT max($field) AS c FROM " .$this->opt['table'] .$this->opt['where'] . $this->opt['group']
+            . $this->opt['having'] .$this->opt['order'] . $this->opt['limit'];
         $data = $this->query($sql);
         return $data ? $data[0]['c'] : $data;
     }
@@ -683,7 +685,8 @@ abstract class Db implements DbInterface
      */
     public function min($field)
     {
-        $sql = "SELECT min($field) AS c FROM " . $this->opt['table'] . $this->opt['where'] . $this->opt['limit'];
+        $sql = "SELECT min($field) AS c FROM " . $this->opt['table'] .$this->opt['where'] . $this->opt['group']
+            . $this->opt['having'] .$this->opt['order'] . $this->opt['limit'];
         $data = $this->query($sql);
         return $data ? $data[0]['c'] : $data;
     }
@@ -693,7 +696,8 @@ abstract class Db implements DbInterface
      */
     public function avg($field)
     {
-        $sql = "SELECT avg($field) AS c FROM " . $this->opt['table'];
+        $sql = "SELECT avg($field) AS c FROM " . $this->opt['table'] .$this->opt['where'] . $this->opt['group']
+            . $this->opt['having'] .$this->opt['order'] . $this->opt['limit'];
         $data = $this->query($sql);
         return $data ? $data[0]['c'] : $data;
     }
@@ -703,7 +707,8 @@ abstract class Db implements DbInterface
      */
     public function sum($field)
     {
-        $sql = "SELECT sum($field) AS c FROM " . $this->opt['table'];
+        $sql = "SELECT sum($field) AS c FROM " . $this->opt['table'] .$this->opt['where'] . $this->opt['group']
+            . $this->opt['having'] .$this->opt['order'] . $this->opt['limit'];
         $data = $this->query($sql);
         return $data ? $data[0]['c'] : $data;
     }
