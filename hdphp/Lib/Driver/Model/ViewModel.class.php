@@ -163,7 +163,11 @@ class ViewModel extends Model
                 }
             }
         }
-        return '*,' . implode(',', $field);
+        if (empty($field)) {
+            return $this->db->opt['field'];
+        } else {
+            return '*,' . implode(',', $field);
+        }
     }
 
 }

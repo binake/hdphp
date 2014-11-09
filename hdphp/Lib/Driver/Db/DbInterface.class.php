@@ -51,5 +51,5 @@ interface DbInterface
      * @param $full
      * @return mixed
      */
-    public function table($table, $full);//设置表
+    public function table($table, $full = false);//设置表
 }
