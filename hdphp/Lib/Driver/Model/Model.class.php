@@ -115,6 +115,17 @@ class Model
     }
 
     /**
+     * 重置模型
+     */
+    protected function __reset()
+    {
+        /**
+         * 重置更新、插件数据
+         */
+        $this->data = array();
+    }
+
+    /**
      * 获得添加、插入数据
      * @param array $data void
      * @return array|null
@@ -122,7 +133,12 @@ class Model
     public function data($data = array())
     {
         if (empty($data)) {
-            $this->data = $_POST;
+            /**
+             * 数据为空时使用$_POST值
+             */
+            if (empty($this->data)) {
+                $this->data = $_POST;
+            }
         } else {
             $this->data = $data;
         }
@@ -196,7 +212,7 @@ class Model
     /**
      * 当前操作的方法
      * 主要是判断数据中是否存在主键,有主键为更新操作,否则为添加操作
-     * 1为播入操作 2为更新操作
+     * 1为插入操作 2为更新操作
      * @return int
      */
     private function getCurrentMethod()
@@ -365,10 +381,10 @@ class Model
 
     /**
      * 删除数据
-     * @param $where 条件
+     * @param string $where 条件
      * @return mixed
      */
-    public function delete($where='')
+    public function delete($where = '')
     {
         $this->trigger && method_exists($this, '__before_delete') && $this->__before_delete();
         $return = $this->db->delete($where);
@@ -411,6 +427,10 @@ class Model
         $this->data($data);
         $return = $this->db->update($this->data);
         $this->trigger && method_exists($this, '__after_update') && $this->__after_update($return);
+        /**
+         * 重置模型
+         */
+        $this->__reset();
         return $return;
     }
 
@@ -425,6 +445,10 @@ class Model
         $this->data($data);
         $return = $this->db->insert($this->data);
         $this->trigger && method_exists($this, '__after_insert') && $this->__after_insert($return);
+        /**
+         * 重置模型
+         */
+        $this->__reset();
         return $return;
     }
 
@@ -440,6 +464,10 @@ class Model
         $this->data($data);
         $return = $this->db->replace($this->data);
         $this->trigger && method_exists($this, '__after_insert') && $this->__after_insert($return);
+        /**
+         * 重置模型
+         */
+        $this->__reset();
         return $return;
     }
 }

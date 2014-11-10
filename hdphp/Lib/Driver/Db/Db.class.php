@@ -291,7 +291,7 @@ abstract class Db implements DbInterface
      */
     public function replace($data)
     {
-        $this->insert($data, 'REPLACE');
+        return $this->insert($data, 'REPLACE');
     }
 
     /**
@@ -826,7 +826,7 @@ abstract class Db implements DbInterface
      */
     public function getLastSql()
     {
-        return current(Debug::$sqlExeArr);
+        return array_pop(Debug::$sqlExeArr);
     }
 
     /**
