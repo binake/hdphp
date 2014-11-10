@@ -196,19 +196,6 @@ class ViewTag
         $limit = isset($attr['limit']) ? $attr['limit'] : "100"; //上传文件数量
         $thumb = isset($attr['thumb']) ? $attr['thumb'] : ''; //生成缩略图尺寸
         $data = isset($attr['data']) ? $attr['data'] : false; //编辑时的图片数据
-        //过滤非法数据，用于编辑显示使用
-        // if ($data) {
-        //     $varName = preg_replace('/[\{\}\$]/', '', $attr['data']);
-        //     if (isset($view->vars[$varName])) {
-        //         $imgData = $view->vars[$varName];
-        //         foreach ($imgData as $k => $_img) {
-        //             if (empty($_img['path'])) {
-        //                 //删除path为空的图片元素
-        //                 unset($view->vars[$varName][$k]);
-        //             }
-        //         }
-        //     }
-        // }
         //设置上传成功的图片数，上传时0，编辑时统计图片数据
         if ($data && isset($view->vars[$data])) {
             //编辑时统计图片数量
@@ -647,5 +634,4 @@ php;
         return "<link type='text/css' rel='stylesheet' href='__HDPHP_EXTEND__/Org/jcrop/css/jquery.Jcrop.min.css'/>\n
         <script src='__HDPHP_EXTEND__/Org/jcrop/js/jquery.Jcrop.min.js'></script>\n";
     }
-
 }

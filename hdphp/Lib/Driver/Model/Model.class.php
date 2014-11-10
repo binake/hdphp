@@ -123,6 +123,10 @@ class Model
          * 重置更新、插件数据
          */
         $this->data = array();
+        /**
+         * 关闭触发器
+         */
+        $this->trigger = false;
     }
 
     /**
@@ -181,7 +185,7 @@ class Model
      * 表单令牌验证
      * @return bool
      */
-    private function checkToken()
+    public function checkToken()
     {
         if (!Token::check()) {
             $this->error = '表单令牌错误';
@@ -195,8 +199,9 @@ class Model
      * 字段映射
      * 将添加或更新的数据键名改为表字段名
      */
-    private function map()
+    public function map($data = array())
     {
+        $this->data($data);
         if ($this->map) {
             foreach ($this->map as $k => $v) {
                 //处理POST
@@ -227,8 +232,9 @@ class Model
      * 验证字段合法性,支持自定义函数,模型方法与Validate验证类方法的操作
      * @return bool
      */
-    private function validate()
+    public function validate($data = array())
     {
+        $this->data($data);
         //当前方法
         $current_method = $this->getCurrentMethod();
         $_data = &$this->data;
@@ -310,8 +316,9 @@ class Model
      * 自动完成
      * 对添加或修改的数据进行自动处理
      */
-    private function auto()
+    public function auto($data = array())
     {
+        $this->data($data);
         $_data = &$this->data;
         $motion = $this->getCurrentMethod();
         foreach ($this->auto as $v) {
