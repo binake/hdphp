@@ -22,7 +22,7 @@ class Model
     //数据库连接驱动对象
     public $db = NULL;
     //触发器状态
-    public $trigger = false;
+    public $trigger = True;
     //模型错误信息
     public $error;
     //模型操作数据
@@ -126,7 +126,7 @@ class Model
         /**
          * 关闭触发器
          */
-        $this->trigger = false;
+        $this->trigger = True;
     }
 
     /**
