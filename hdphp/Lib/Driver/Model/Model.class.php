@@ -179,6 +179,7 @@ class Model
         foreach ($action as $a) {
             if (!$this->$a()) return false;
         }
+        return true;
     }
 
     /**

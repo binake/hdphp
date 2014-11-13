@@ -128,8 +128,10 @@ final class Route
         $root = rtrim(dirname($script_file), '/');
         defined('__ROOT__') or define("__ROOT__", __HOST__ . ($root == '/' || $root == '\\' ? '' : $root));
         //网站根-含入口文件 开启伪静态时去除入口文件
-        if (C('URL_REWRITE') && substr($_SERVER['SCRIPT_NAME'], -3) == 'php') {
-            defined('__WEB__') or define("__WEB__", __HOST__ . dirname($_SERVER['SCRIPT_NAME']));
+        if (C('URL_REWRITE')) {
+            //删除入口文件
+            $scriptName = preg_replace('/\/?[a-z]+\.php/i', '', $_SERVER['SCRIPT_NAME']);
+            defined('__WEB__') or define("__WEB__", __HOST__ . $scriptName);
         } else {
             defined('__WEB__') or define("__WEB__", __HOST__ . $_SERVER['SCRIPT_NAME']);
         }
@@ -146,9 +148,9 @@ final class Route
         //应用
         defined('APP') or define('APP', basename(APP_PATH));
         //模块
-        defined('MODULE') or define("MODULE", $_GET[C('VAR_MODULE')]);
+        defined('MODULE') or define("MODULE", ucfirst($_GET[C('VAR_MODULE')]));
         //控制器
-        defined('CONTROLLER') or define("CONTROLLER", $_GET[C('VAR_CONTROLLER')]);
+        defined('CONTROLLER') or define("CONTROLLER", ucfirst($_GET[C('VAR_CONTROLLER')]));
         //方法
         defined('ACTION') or define("ACTION", $_GET[C('VAR_ACTION')]);
         // URL类型    1:pathinfo  2:普通模式  3:兼容模式
@@ -269,7 +271,9 @@ final class Route
     static public function toUrl($url)
     {
         $route = C("route");
-        //未定义路由规则
+        /**
+         * 未定义路由规则
+         */
         if (!$route) {
             return $url;
         }
@@ -307,7 +311,8 @@ final class Route
                 //获得如 "info/:city_:row" 中的:city与:row
                 $routeGetVars = array();
                 //普通路由处理
-                preg_match_all('/:([a-z]*)/i', $routeKey, $routeGetVars, PREG_PATTERN_ORDER); //获得路由规则中以:开始的变量
+                //获得路由规则中以:开始的变量
+                preg_match_all('/:([a-z]*)/i', $routeKey, $routeGetVars, PREG_PATTERN_ORDER);
                 $getRouteUrl = $routeVal;
                 switch (C("URL_TYPE")) {
                     case 1:
@@ -361,5 +366,96 @@ final class Route
                 $url = preg_replace(array("/{$var}{$dli}.*?{$dli}/"), '', $url);
         }
         return rtrim($url, "&" . $dli);
+    }
+    /**
+     * 根据配置文件的URL参数重新生成URL地址
+     * @param String $path 访问url
+     * @param array $args GET参数
+     * <code>
+     * $args = "nid=2&cid=1"
+     * $args=array("nid"=>2,"cid"=>1)
+     * </code>
+     * @return string
+     */
+    static public function getUrl($path, $args = array())
+    {
+        /**
+         * 参数$args为字符串时转数组
+         */
+        if (is_string($args)) {
+            parse_str($args, $args);
+        }
+        /**
+         * 模块组时添加g参数
+         */
+        if (!empty($_GET[C('VAR_GROUP')])) {
+            $args[C('VAR_GROUP')] = $_GET[C('VAR_GROUP')];
+        }
+        /**
+         * 开启伪静态时去除入口文件
+         */
+        $root = C('URL_REWRITE') ? preg_replace('/\/?[a-z]+\.php/i', '', __WEB__) : __WEB__;
+        /**
+         * Host主机
+         */
+        switch (C("URL_TYPE")) {
+            case 1:
+                $root .= '/'; //入口位置
+                break;
+            case 2:
+                $root .= C('URL_REWRITE') ? '/' : '?';
+                break;
+            case 3:
+                $root .= (C('URL_REWRITE') ? '/' : '?') . C('PATHINFO_VAR') . '=';
+                break;
+        }
+        $action = array();
+        $info = explode('/', $path);
+        switch (count($info)) {
+            case 3:
+                $action[C("VAR_MODULE")] = ucfirst($info[0]);
+                $action[C("VAR_CONTROLLER")] = ucfirst($info[1]);
+                $action[C("VAR_ACTION")] = $info[2];
+                break;
+            case 2:
+                $action[C("VAR_MODULE")] = ucfirst(MODULE);
+                $action[C("VAR_CONTROLLER")] = ucfirst($info[0]);
+                $action[C("VAR_ACTION")] = $info[1];
+                break;
+            case 1:
+                $action[C("VAR_MODULE")] = ucfirst(MODULE);
+                $action[C("VAR_CONTROLLER")] = ucfirst(CONTROLLER);
+                $action[C("VAR_ACTION")] = $info[0];
+                break;
+        }
+        switch (C("URL_TYPE")) {
+            case 1:
+            case 3:
+                $url = $action[C("VAR_MODULE")] . '/' . $action[C("VAR_CONTROLLER")] . '/' . $action[C("VAR_ACTION")];
+                break;
+            case 2:
+                $url =  C("VAR_MODULE") . '=' . $action[C("VAR_MODULE")] . '&' . C("VAR_CONTROLLER") . '=' . $action[C("VAR_CONTROLLER")] . '&' .
+                    C("VAR_ACTION") . '=' . $action[C("VAR_ACTION")];
+                break;
+        }
+        /**
+         * 处理参数
+         */
+        if (!empty($args)) {
+            switch (C("URL_TYPE")) {
+                case 1:
+                case 3:
+                    foreach ($args as $name => $value) {
+                        $url .= '/' . $name . '/' . $value;
+                    }
+                    break;
+                case 2:
+                    foreach ($args as $name => $value) {
+                        $url .= '&' . $name . '=' . $value;
+                    }
+                    break;
+            }
+        }
+        return $root.Route::toUrl($url).C('HTML_SUFFIX');
     }
 }

@@ -140,7 +140,7 @@ function A($arg, $args = array())
     $pathArr = explode('/', $arg);
     switch (count($pathArr)) {
         case 1 :
-            //当前应用
+            //当前控制器
             $base = APP_CONTROLLER_PATH . CONTROLLER;
             $method = $pathArr[0];
             break;
@@ -611,7 +611,7 @@ function p($var)
  */
 function go($url, $time = 0, $msg = '')
 {
-    $url = U($url);
+    $url = Route::getUrl($url);
     if (!headers_sent()) {
         $time == 0 ? header("Location:" . $url) : header("refresh:{$time};url={$url}");
         exit($msg);
@@ -1038,102 +1038,7 @@ function get_uuid($sep = '')
  */
 function U($path, $args = array())
 {
-    if (preg_match("/^https?:\/\//i", $path) || empty($path))
-        return $path;
-    //参数$args为字符串时转数组
-    if (is_string($args)) {
-        parse_str($args, $args);
-    }
-    $parseUrl = parse_url(trim($path, '/'));
-    if (!isset($parseUrl['path'])) return $path;
-    $path = trim($parseUrl['path'], '/');
-    //解析字符串的?后参数 并与$args合并
-    if (isset($parseUrl['query'])) {
-        parse_str($parseUrl['query'], $query);
-        $args = array_merge($query, $args);
-    }
-    //组合出索引数组  将?后参数与$args传参
-    $gets = array();
-    if (is_array($args)) {
-        foreach ($args as $n => $q) {
-            array_push($gets, $n);
-            array_push($gets, $q);
-        }
-    }
-    $vars = explode("/", $path);
-    //入口文件类型
-    switch (C("URL_TYPE")) {
-        case 1:
-            $root = __WEB__ . '/'; //入口位置
-            break;
-        case 2:
-            $root = C('URL_REWRITE') ? __WEB__ . '/' : __WEB__ . '?';
-            break;
-        case 3:
-            $root = __WEB__ . '?' . C('PATHINFO_VAR') . '=';
-            break;
-    }
-    //组合出__WEB__后内容
-    $data = array();
-    //模块组
-    if (isset($_GET[C('VAR_GROUP')])) {
-        $data[] = C('VAR_GROUP');
-        $data[] = $_GET[C('VAR_GROUP')];
-    }
-    switch (count($vars)) {
-        case 2: //应用
-            $data[] = C("VAR_MODULE");
-            $data[] = MODULE;
-            $data[] = C("VAR_CONTROLLER");
-            $data[] = array_shift($vars);
-            $data[] = C("VAR_ACTION");
-            $data[] = array_shift($vars);
-            break;
-        case 1: //方法
-            $data[] = C("VAR_MODULE");
-            $data[] = MODULE;
-            $data[] = C("VAR_CONTROLLER");
-            $data[] = CONTROLLER;
-            $data[] = C("VAR_ACTION");
-            $data[] = array_shift($vars);
-            break;
-        default: //应用组及其他情况
-            $data[] = C("VAR_MODULE");
-            $data[] = array_shift($vars);
-            $data[] = C("VAR_CONTROLLER");
-            $data[] = array_shift($vars);
-            $data[] = C("VAR_ACTION");
-            $data[] = array_shift($vars);
-            if (is_array($vars)) {
-                foreach ($vars as $v) {
-                    $data[] = $v;
-                }
-            }
-    }
-    //合并GET参数
-    $varsAll = array_merge($data, $gets);
-    $url = '';
-    switch (C("URL_TYPE")) {
-        case 1:
-        case 3:
-            foreach ($varsAll as $value) {
-                $url .= C('PATHINFO_Dli') . $value;
-            }
-            $url = str_replace(array("/" . C("VAR_MODULE") . "/", "/" . C("VAR_CONTROLLER") . "/", "/" . C("VAR_ACTION") . "/"), "/", $url);
-            $url = substr($url, 1);
-            break;
-        case 2:
-            foreach ($varsAll as $k => $value) {
-                if ($k % 2) {
-                    $url .= '=' . $value;
-                } else {
-                    $url .= '&' . $value;
-                }
-            }
-            $url = substr($url, 1);
-            break;
-    }
-    return $root . Route::toUrl($url) . C('HTML_SUFFIX');
+    return Route::getUrl($path, $args);
 }
 
 /**
@@ -1302,7 +1207,7 @@ function file_exists_case($file)
  * @param string $url 操作的url
  * @return string 移除GET变量后的URL地址
  */
-function url_param_remove($var, $url = null)
+function remove_url_param($var, $url = null)
 {
     return Route::removeUrlParam($var, $url);
 }

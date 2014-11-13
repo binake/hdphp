@@ -880,7 +880,7 @@ abstract class Db implements DbInterface
             $arr['table'][$t['Name']]['charset'] = $charset[0];
             $arr['table'][$t['Name']]['dataFree'] = $t['Data_free'];//碎片大小
             $arr['table'][$t['Name']]['indexSize'] = $t['Index_length'];//索引大小
-            $arr['table'][$t['Name']]['dataSize'] = $t['Data_free'];
+            $arr['table'][$t['Name']]['dataSize'] = $t['Data_length'];//数据大小
             $arr['table'][$t['Name']]['totalSize'] = $t['Data_free'] + $t['Data_length'] + $t['Index_length'];
             $fieldData = $this->getAllField($t['Name'],true);
             $arr['table'][$t['Name']]['field'] = $fieldData;

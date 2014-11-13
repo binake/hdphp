@@ -63,6 +63,10 @@ HDPHP遵循Apache2开源协议发布。Apache Licence是著名的非盈利开源
 ----
 
 # 更新日志 #
+### 2014-11-13
+1. 修复getAllTableInfo获得表大小失败问题
+2. 修复模型执行create不能添加数据问题
+
 ### 2014-11-10
 1. 解决getLastSql()获取值错误问题
 2. 优化视图与关联模型
