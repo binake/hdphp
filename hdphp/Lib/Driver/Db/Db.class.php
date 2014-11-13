@@ -464,9 +464,9 @@ abstract class Db implements DbInterface
                                         $where .= " $key " . " LIKE '$v' " . $logic;
                                     }
                                     break;
-                                case 'NOLIKE':
+                                case 'NOTLIKE':
                                     foreach ($option as $v) {
-                                        $where .= " $key " . " NO LIKE '$v'" . $logic;
+                                        $where .= " $key " . " NOT LIKE '$v'" . $logic;
                                     }
                                     break;
                                 case 'EQ':
