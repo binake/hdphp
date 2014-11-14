@@ -27,7 +27,7 @@ abstract class Db implements DbInterface
     public $opt = array(
         'table' => null,
         'pri' => null,
-        'field' => '',
+        'field' => '*',
         'fieldData' => array(),
         'where' => '',
         'like' => '',
@@ -288,6 +288,7 @@ abstract class Db implements DbInterface
     /**
      * REPLACE更新表
      * @param $data
+     * @return array|bool
      */
     public function replace($data)
     {
