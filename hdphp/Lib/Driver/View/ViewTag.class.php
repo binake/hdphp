@@ -40,21 +40,23 @@ class ViewTag
         'js' => array('block' => 0),
         'css' => array('block' => 0),
         'noempty' => array('block' => 0),
+        'jsconst' => array('block' => 0), //定义JS常量
+        'define' => array('block' => 0),
+        'literal'=>array('block' => 1, 'level' => 5),//Literal 标签区域内的数据将被当作文本处理
+        'jquery' => array('block' => 0),
+
         'ueditor' => array('block' => 0),
         'codehighlight'=>array('block' => 0),//代码高亮
-        'jquery' => array('block' => 0),
         'jcrop' => array('block' => 0),
         'upload' => array('block' => 0), //uploadif上传组件
         'zoom' => array('block' => 0), //图片放大镜
-        'jsconst' => array('block' => 0), //定义JS常量
-        'define' => array('block' => 0),
         'bootstrap' => array('block' => 0),
         'hdjs' => array('block' => 0),//包括hdui、hdvalidate、hdslide等
         'hdui' => array('block' => 0),//hdjs前台ui库
         'hdvalidate'=>array('block'=>0),//hdvalidate前端验证
         'hdslide' => array('block' => 0),//轮换版
         'cal' => array('block' => 0),//日历
-        'literal'=>array('block' => 1, 'level' => 5)//Literal 标签区域内的数据将被当作文本处理
+
     );
 
     /**

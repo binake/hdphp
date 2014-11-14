@@ -379,6 +379,7 @@ final class Route
      */
     static public function getUrl($path, $args = array())
     {
+        if(preg_match('/^https?:\/\//',$path))return $path;
         /**
          * 参数$args为字符串时转数组
          */
