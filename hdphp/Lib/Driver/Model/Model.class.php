@@ -124,7 +124,7 @@ class Model
          */
         $this->data = array();
         /**
-         * 关闭触发器
+         * 开启触发器
          */
         $this->trigger = True;
     }
@@ -397,6 +397,10 @@ class Model
         $this->trigger && method_exists($this, '__before_delete') && $this->__before_delete();
         $return = $this->db->delete($where);
         $this->trigger && method_exists($this, '__after_delete') && $this->__after_delete($return);
+        /**
+         * 重置模型
+         */
+        $this->__reset();
         return $return;
     }
 
@@ -421,6 +425,10 @@ class Model
         $this->trigger && method_exists($this, '__before_select') && $this->__before_select();
         $return = $this->db->select($where);
         $this->trigger && method_exists($this, '__after_select') && $this->__after_select($return);
+        /**
+         * 重置模型
+         */
+        $this->__reset();
         return $return;
     }
 
@@ -431,8 +439,8 @@ class Model
      */
     public function update($data = array())
     {
-        $this->trigger && method_exists($this, '__before_update') && $this->__before_update($data);
         $this->data($data);
+        $this->trigger && method_exists($this, '__before_update') && $this->__before_update($this->data);
         $return = $this->db->update($this->data);
         $this->trigger && method_exists($this, '__after_update') && $this->__after_update($return);
         /**
@@ -449,8 +457,8 @@ class Model
      */
     public function insert($data = array())
     {
-        $this->trigger && method_exists($this, '__before_insert') && $this->__before_insert($data);
         $this->data($data);
+        $this->trigger && method_exists($this, '__before_insert') && $this->__before_insert($this->data);
         $return = $this->db->insert($this->data);
         $this->trigger && method_exists($this, '__after_insert') && $this->__after_insert($return);
         /**
@@ -468,8 +476,8 @@ class Model
      */
     public function replace($data = array())
     {
-        $this->trigger && method_exists($this, '__before_insert') && $this->__before_insert($data);
         $this->data($data);
+        $this->trigger && method_exists($this, '__before_insert') && $this->__before_insert($this->data);
         $return = $this->db->replace($this->data);
         $this->trigger && method_exists($this, '__after_insert') && $this->__after_insert($return);
         /**
