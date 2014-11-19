@@ -66,6 +66,7 @@ HDPHP遵循Apache2开源协议发布。Apache Licence是著名的非盈利开源
 
 ### 2014-11-19
 1. 优化模型触发器
+2. 优化ViewModel模型
 
 ### 2014-11-14
 1. 更新使用$this->error方法使用U函数时错误问题
