@@ -54,10 +54,18 @@ class ViewModel extends Model
      */
     private function setDriverOption()
     {
-        $table = $this->getTable();
-        $field = $this->getField();
-        $this->db->opt['table'] = $table;
-        $this->db->opt['field'] = $field;
+        if (!isset($this->view)) {
+            /**
+             * 没有定义view属性时不进行处理
+             */
+            return;
+        } else {
+            /**
+             * 获得本次查询的table与field值
+             */
+            $this->setTable();
+            $this->setField();
+        }
     }
 
     /**
@@ -78,10 +86,17 @@ class ViewModel extends Model
      */
     public function select($where = '')
     {
+        /**
+         * 设置查询表与字段
+         */
         $this->setDriverOption();
         $this->trigger && method_exists($this, '__before_select') && $this->__before_select();
         $return = $this->db->select($where);
         $this->trigger && method_exists($this, '__after_select') && $this->__after_select($return);
+        /**
+         * 重置模型
+         */
+        $this->__reset();
         return $return;
     }
 
@@ -92,19 +107,12 @@ class ViewModel extends Model
      * 调用relation方法时更改Db::opt['table']值,用于本次查询临时改表
      * @return mixed
      */
-    private function getTable()
+    private function setTable()
     {
-        /**
-         * 没有定义view属性时不做任何处理
-         * 事实上ViewModel操作全局依赖View属性定义
-         */
-        if (empty($this->view)) {
-            return $this->db->opt['table'];
-        }
         $from = '';
         foreach ($this->view as $table => $set) {
             /**
-             * 表名设置
+             * 表别名设置
              */
             $as = isset($set['_as']) ? $set['_as'] : $table;
             $from .= C('DB_PREFIX') . $table . ' ' . $as;
@@ -122,51 +130,38 @@ class ViewModel extends Model
             }
         }
         /**
-         * 去除表后面关联操作符如INNER JOIN
+         * 去除表后面关联操作符如INNER JOIN，并更改驱动表
          */
-        return preg_replace('@(INNER|RIGHT|LEFT)\s*JOIN\s*$@', '', $from);
+        $this->db->opt['table'] = preg_replace('@(INNER|RIGHT|LEFT)\s*JOIN\s*$@', '', $from);
 
     }
 
     /**
      * 设置查询字段
      */
-    private function getField()
+    private function setField()
     {
         /**
          * 字段设置
          * 如果链式操作中调用了field()方法,则不执行以下操作
          */
-        if (empty($this->view) || ($this->db->opt['field'] != '*')) {
-            return $this->db->opt['field'];
-        }
-        $field = array();
-        foreach ($this->view as $table => $set) {
-            //表名
-            $as = isset($set['_as']) ? $set['_as'] : $table;
-            /**
-             * 当前表所有字段
-             */
-            $fieldData = array_keys($this->db->getAllField($table));
-            /**
-             * 设置别名字段
-             */
-            foreach ($set as $name => $f) {
-                /**
-                 * 特定关键词不处理
-                 */
-                if (in_array($name, array('_type', '_on', '_as'))) {
-                    continue;
-                }
-                if (($index = array_search($name, $fieldData)) !== false) {
-                    $field[] = $as . '.' . $name . ' AS ' . $f;
-                }
-            }
-        }
-        if (empty($field)) {
+        if ($this->db->opt['field'] != '*') {
             return $this->db->opt['field'];
         } else {
-            return '*,' . implode(',', $field);
+            $field = '';
+            foreach ($this->view as $table => $set) {
+                if (!isset($set['_field'])) {
+                    /**
+                     * 没有定义_field属性时不处理
+                     */
+                    continue;
+                } else {
+                    $field .= $set['_field'] . ',';
+                }
+            }
+            if (!empty($field)) {
+                $this->db->opt['field'] = substr($field, 0, -1);
+            }
         }
     }
 
