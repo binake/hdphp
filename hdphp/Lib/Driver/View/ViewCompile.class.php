@@ -234,7 +234,7 @@ class ViewCompile
     private function replaceCondition($content)
     {
         foreach ($this->condition as $k => $v) {
-            $content = preg_replace("/$k/", $v, $content);
+            $content = preg_replace("/$k/i", $v, $content);
         }
         return $content;
     }
