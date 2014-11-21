@@ -336,21 +336,30 @@ class Model
             //时间：1有这个表单项就处理  2 必须处理的表单项 3 如果表单不为空才处理
             $condition = isset($v[3]) ? $v[3] : 1;
             switch ($condition) {
-                //有post这个变量就处理
                 case 1 :
+                    //有这个变量时处理
                     if (!isset($_data[$name])) {
                         continue 2;
                     }
                     break;
-                // 必须处理
                 case 2 :
+                    // 必须处理
                     if (!isset($_data[$name]))
                         $_data[$name] = '';
                     break;
-                //不为空验证
                 case 3 :
+                    //不为空处理
                     if (empty($_data[$name])) {
                         continue 2;
+                    }
+                    break;
+                case 4:
+                    //没有这个变量时处理
+                    if (isset($_data[$name])) {
+                        //变量存在不操作
+                        continue 2;
+                    } else {
+                        $_data[$name] = '';
                     }
                     break;
             }

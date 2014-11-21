@@ -54,7 +54,7 @@ class ViewModel extends Model
      */
     private function setDriverOption()
     {
-        if (!isset($this->view)) {
+        if (empty($this->view)) {
             /**
              * 没有定义view属性时不进行处理
              */
