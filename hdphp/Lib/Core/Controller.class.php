@@ -4,7 +4,7 @@
 // |   Version: 2013.01
 // |      Site: http://www.hdphp.com
 // |-----------------------------------------------------------------------------------
-// |    Author: 向军 <houdunwangxj@gmail.com>
+// |    Author: 向军 <2300071698@qq.com>
 // | Copyright (c) 2012-2013, http://houdunwang.com. All Rights Reserved.
 // |-----------------------------------------------------------------------------------
 // |   License: http://www.apache.org/licenses/LICENSE-2.0
@@ -36,9 +36,13 @@ abstract class Controller
     public function __construct()
     {
         Hook::listen('CONTROLLER_START', $this->options);
-        //视图对象
+        /**
+         * 视图对象
+         */
         $this->view = ViewFactory::factory();
-        //子类如果存在auto方法，自动运行
+        /**
+         * 自动运行的魔术方法
+         */
         if (method_exists($this, "__init")) {
             $this->__init();
         }
@@ -52,16 +56,17 @@ abstract class Controller
      */
     public function __call($action, $args)
     {
-        //调用的方法不存在
+        /**
+         * 控制器方法不存在时
+         */
         if (strcasecmp($action, ACTION) == 0) {
-            //执行插件如uploadify|ueditor|keditor
-            if (alias_import($action)) {
-                require alias_import($action);
-            } elseif (method_exists($this, "__empty")) {
+            if (method_exists($this, "__empty")) {
                 //执行空方法_empty
                 $this->__empty($args);
             } else {
-                //方法不存在时抛出404错误页
+                /**
+                 * 404错误页
+                 */
                 _404('控制器中不存在动作' . $action);
             }
         }
@@ -138,7 +143,7 @@ abstract class Controller
     }
 
     /**
-     * 错误输出
+     * 错误页面
      * @param string $message 提示内容
      * @param null $url 跳转URL
      * @param int $time 跳转时间
@@ -158,7 +163,7 @@ abstract class Controller
     }
 
     /**
-     * 成功
+     * 成功页面
      * @param string $message 提示内容
      * @param null $url 跳转URL
      * @param int $time 跳转时间

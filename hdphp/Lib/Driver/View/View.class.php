@@ -24,21 +24,30 @@ abstract class View
     protected function getTemplateFile($file)
     {
         if (is_null($file)) {
+            /**
+             * 没有传参时使用 动作为为文件名
+             */
             $file = CONTROLLER_VIEW_PATH . ACTION;
         } else if (!strstr($file, '/')) {
+            /**
+             * 没有路径时使用控制器视图目录
+             */
             $file = CONTROLLER_VIEW_PATH . $file;
         }
-        //添加模板后缀
-        if (!preg_match('/\.\w+$/', $file))
+        /**
+         * 没有设置扩展名时，添加扩展名
+         */
+        if (!preg_match('/\.\w+$/', $file)) {
             $file .= C('TPL_FIX');
+        }
+        /**
+         * 模板文件检测
+         */
         if (is_file($file)) {
             return $file;
         } else {
-            //模版文件不存在
-            if (DEBUG)
-                halt("模板不存在:$file");
-            else
-                return false;
+            DEBUG && halt("模板不存在:$file");
+            return false;
         }
     }
 }

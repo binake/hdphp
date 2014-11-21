@@ -18,14 +18,26 @@
  */
 final class ViewHd extends View {
 
+    /**
+     * 模板变量
+     * @var array
+     */
 	public $vars = array();
-	//模板变量
+    /**
+     * 系统常量如__WEB__$const['WEB'];
+     * @var array
+     */
 	public $const = array();
-	//系统常量如__WEB__$const['WEB'];
+    /**
+     * 模版文件
+     * @var null
+     */
 	public $tplFile = null;
-	//模版文件
+    /**
+     * 编译文件
+     * @var null
+     */
 	public $compileFile = null;
-	//编译文件
 
 	/**
 	 * 模板显示
@@ -41,7 +53,7 @@ final class ViewHd extends View {
 		//缓存文件名
 		$cacheName = md5($_SERVER['REQUEST_URI']);
 		//缓存时间
-		$cacheTime = is_numeric($cacheTime) ? $cacheTime : intval(C("CACHE_TPL_TIME"));
+		$cacheTime = is_numeric($cacheTime) ? $cacheTime : intval(C("TPL_CACHE_TIME"));
 		//缓存路径
 		$cachePath = $cachePath ? $cachePath : APP_CACHE_PATH;
 		//内容
@@ -49,13 +61,20 @@ final class ViewHd extends View {
 		if ($cacheTime >= 0) {
 			$content = S($cacheName, false, $cacheTime, array("dir" => $cachePath, 'zip' => false, "Driver" => "File"));
 		}
-		//缓存失效
+        /**
+         * 缓存失效
+         */
 		if (!$content) {
-			//获得模板文件
+            /**
+             * 获得模板文件
+             */
 			$this -> tplFile = $this -> getTemplateFile($tplFile);
-			//模板文件不存在
-			if (!$this -> tplFile)
+            /**
+             * 模板文件不存在
+             */
+			if (!$this -> tplFile){
 				return;
+            }
 			//编译文件
 			$this -> compileFile = APP_COMPILE_PATH . MODULE.'/'.CONTROLLER.'/'.ACTION.'_'.substr(md5($this -> tplFile), 0, 8) . '.php';
 			//记录模板编译文件
@@ -144,7 +163,7 @@ final class ViewHd extends View {
 
 	/**
 	 * 向模板中传入变量
-	 * @param string $var 变量名
+	 * @param string|array $var 变量名
 	 * @param mixed $value 变量值
 	 * @return bool
 	 */

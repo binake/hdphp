@@ -1152,20 +1152,36 @@ function load($file)
 /**
  * 别名导入
  * @param string | array $name 别名
- * @param string $path 路径
+ * @param string $path 文件路径
  * @return bool
  */
 function alias_import($name = null, $path = null)
 {
+    /**
+     * 别名缓存
+     */
     static $_alias = array();
-    if (is_null($name)) return $_alias;
-    if (is_string($name)) $name = strtolower($name);
+    /**
+     * 返回别名定义数组
+     */
+    if (is_null($name)) {
+        return $_alias;
+    }
     if (is_array($name)) {
+        /**
+         * 批量导入别名定义
+         */
         $_alias = array_merge($_alias, array_change_key_case($name));
         return true;
-    } elseif (!is_null($path)) {
+    } else if (!is_null($path)) {
+        /**
+         * 定义一条别名规则
+         */
         return $_alias[$name] = $path;
-    } elseif (isset($_alias[$name])) {
+    } else if (isset($_alias[strtolower($name)])) {
+        /**
+         * 加载别名定义文件
+         */
         return require_cache($_alias[$name]);
     }
     return false;
