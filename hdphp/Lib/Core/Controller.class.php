@@ -74,8 +74,8 @@ abstract class Controller
 
     /**
      * 魔术方法
-     * @param $name
-     * @param $value
+     * @param $name 变量名
+     * @param $value 变量值
      */
     public function __set($name, $value)
     {
@@ -84,21 +84,18 @@ abstract class Controller
 
     /**
      * 显示视图
-     * @access protected
-     * @param string $tplFile 模板文件
+     * @param null $tplFile 模板文件
      * @param int $cacheTime 缓存时间
-     * @param string $cachePath 缓存目录
-     * @param bool $stat 是否返回解析结果
+     * @param null $cachePath 缓存目录
      * @param string $contentType 文件类型
-     * @param string $charset 字符集
      * @param bool $show 是否显示
      * @return mixed
      */
-    protected function display($tplFile = null, $cacheTime = -1, $cachePath = null, $stat = false, $contentType = "text/html", $charset = "", $show = true)
+    protected function display($tplFile = null, $cacheTime = -1, $cachePath = null, $contentType = "text/html", $show = true)
     {
         Hook::listen("VIEW_START");
         //执行视图对象中的display同名方法
-        $status = $this->view->display($tplFile, $cacheTime, $cachePath, $contentType, $charset, $show);
+        $status = $this->view->display($tplFile, $cacheTime, $cachePath, $contentType, $show);
         Hook::listen("VIEW_END");
         return $status;
     }
@@ -113,9 +110,9 @@ abstract class Controller
      * @param bool $show 是否显示
      * @return mixed
      */
-    protected function fetch($tplFile = null, $cacheTime = null, $cachePath = null, $contentType = "text/html", $charset = "", $show = true)
+    protected function fetch($tplFile = null, $cacheTime = null, $cachePath = null, $contentType = "text/html")
     {
-        return $this->view->fetch($tplFile, $cacheTime, $cachePath, $contentType, $charset);
+        return $this->view->fetch($tplFile, $cacheTime, $cachePath, $contentType);
     }
 
     /**

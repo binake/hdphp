@@ -58,7 +58,7 @@ final class Dir
             if (is_dir($v) || !$exts || preg_match("/\.($exts)/i", $v)) {
                 $list [$id] ['type'] = filetype($v);
                 $list [$id] ['filename'] = basename($v);
-                $list [$id] ['path'] = str_replace("\\", "/", realpath($v)).(is_dir($v)?'/':'');
+                $list [$id] ['path'] = str_replace("\\", "/", realpath($v)) . (is_dir($v) ? '/' : '');
                 $list [$id] ['filemtime'] = filemtime($v);
                 $list [$id] ['fileatime'] = fileatime($v);
                 $list [$id] ['size'] = is_file($v) ? filesize($v) : self::get_dir_size($v);
@@ -120,7 +120,7 @@ final class Dir
             return true;
         }
         $dirPath = self::dirPath($dirName);
-		if(!is_dir($dirPath))return true;
+        if (!is_dir($dirPath)) return true;
         foreach (glob($dirPath . "*") as $v) {
             is_dir($v) ? self::del($v) : unlink($v);
         }
@@ -190,17 +190,23 @@ final class Dir
      */
     static public function safeFile($dirName, $recursive = false)
     {
-        //记录已经操作过的目录
-        static $s = array();
         $file = HDPHP_TPL_PATH . '/index.html';
-        if (!is_dir($dirName)) return;
+        if (!is_dir($dirName)) {
+            return;
+        }
         $dirPath = self::dirPath($dirName);
-        is_file($dirPath . 'index.html') || copy($file, $dirPath . 'index.html');
-        foreach (glob($dirPath . "*") as $d) {
-            if (is_dir($d) && !in_array($d, $s)) {
-                $s[] = $d;
-                is_file($d . '/index.html') || copy($file, $d . '/index.html');
-                $recursive && self::safeFile($d);
+        /**
+         * 创建安全文件
+         */
+        if (!is_file($dirPath . 'index.html')) {
+            copy($file, $dirPath . 'index.html');
+        }
+        /**
+         * 操作子目录
+         */
+        if ($recursive) {
+            foreach (glob($dirPath . "*") as $d) {
+                is_dir($d) and self::safeFile($d);
             }
         }
     }

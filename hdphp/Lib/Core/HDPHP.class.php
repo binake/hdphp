@@ -73,7 +73,7 @@ final class HDPHP
         HDPHP::_appAutoLoad();
     }
     /**
-     * 自动加载Lib文件
+     * 自动加载文件
      */
     static private function _appAutoLoad()
     {

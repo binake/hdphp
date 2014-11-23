@@ -1,14 +1,12 @@
 <?php
 return array(
     /********************************基本参数********************************/
-    'CHARSET'                       => 'utf8',      //字符集
     'DEFAULT_TIME_ZONE'             => 'PRC',       //时区
     'LANGUAGE'                      => '',          //语言包
     'AUTH_KEY'                      => 'HouDunWang',//加密Key(如果使用建议定期更换AUTH_KEY)
     'CHECK_FILE_CASE'               => TRUE,        //windows区分大小写
     'AUTO_LOAD_FILE'                => array(),     //自动加载应用Lib目录或应用组Common/Lib目录下的文件
     'FILTER_FUNCTION'               => array('htmlspecialchars','strip_tags'), //过滤函数会在Q(),date_format()等函数中使用
-    'HTML_PATH'						=>'html/',      //静态html文件储存目录
     /********************************数据库********************************/
     'DB_DRIVER'                     => 'Mysqli',    //数据库驱动
     'DB_CHARSET'                    => 'utf8',      //数据库字符集
@@ -23,6 +21,7 @@ return array(
     'CACHE_SELECT_TIME'             => -1,          //缓存时间 -1为不缓存 0为永久缓存
     'CACHE_SELECT_LENGTH'           => 30,          //缓存最大条数
     /********************************模板参数********************************/
+    'TPL_CHARSET'                   => 'utf-8',     //字符集
     'TPL_PATH'                      => 'View',      //模板目录
     'TPL_STYLE'                     => '',          //风格
     'TPL_FIX'                       => '.html',     //模版文件扩展名

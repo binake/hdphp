@@ -161,14 +161,16 @@ final class Boot
         }
         //复制视图
         is_file(CONTROLLER_VIEW_PATH . "index.html")   or copy(HDPHP_PATH . 'Lib/Tpl/view.html', CONTROLLER_VIEW_PATH . "index.html");
-        //复制公共模板文件
+        //复制模板文件
         is_file(MODULE_PUBLIC_PATH . "success.html")    or copy(HDPHP_PATH . 'Lib/Tpl/success.html', MODULE_PUBLIC_PATH . "success.html");
         is_file(MODULE_PUBLIC_PATH . "error.html")      or copy(HDPHP_PATH . 'Lib/Tpl/error.html', MODULE_PUBLIC_PATH . "error.html");
-        //复制模块配置文件
-        is_file(MODULE_CONFIG_PATH . "config.php")      or copy(HDPHP_PATH . 'Lib/Tpl/configModule.php', MODULE_CONFIG_PATH . "config.php");
-        is_file(APP_CONFIG_PATH . "config.php")         or copy(HDPHP_PATH . 'Lib/Tpl/configApp.php', APP_CONFIG_PATH . "config.php");
+        //复制配置文件
+        is_file(APP_CONFIG_PATH . "config.php")         or copy(HDPHP_PATH . 'Lib/Data/configApp.php', APP_CONFIG_PATH . "config.php");
+        is_file(MODULE_CONFIG_PATH . "config.php")      or copy(HDPHP_PATH . 'Lib/Data/configModule.php', MODULE_CONFIG_PATH . "config.php");
+        //复制标签库
+        is_file(APP_TAG_PATH . "CommonTag.class.php")   or copy(HDPHP_PATH . 'Lib/Data/CommonTag.class.php', APP_TAG_PATH . "CommonTag.class.php");
         //创建测试控制器
-        is_file(MODULE_CONTROLLER_PATH . 'IndexController.class.php') or file_put_contents(MODULE_CONTROLLER_PATH . 'IndexController.class.php', file_get_contents(HDPHP_PATH . 'Lib/Tpl/controller.php'));
+        is_file(MODULE_CONTROLLER_PATH . 'IndexController.class.php') or copy(HDPHP_PATH . 'Lib/Data/IndexController.class.php', MODULE_CONTROLLER_PATH . "IndexController.class.php");
         //创建安全文件
         self::safeFile();
         //批量创建模块

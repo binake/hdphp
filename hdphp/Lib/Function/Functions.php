@@ -108,7 +108,13 @@ function F($name, $value = false, $path = APP_CACHE_PATH)
  */
 function S($name, $value = false, $expire = null, $options = array())
 {
+    /**
+     * 缓存数据
+     */
     static $_data = array();
+    /**
+     * 实例缓存对象
+     */
     $cacheObj = Cache::init($options);
     if (is_null($value)) {
         return $cacheObj->del($name);
@@ -183,25 +189,36 @@ function import($class = null, $base = null, $ext = ".class.php")
     $class = str_replace(".", "/", $class);
     if (is_null($base)) {
         $info = explode("/", $class);
-        //加载应用
         if ($info[0] == '@' || APP == $info[0]) {
+            /**
+             * 应用下类文件
+             */
             $base = APP_PATH;
             $class = substr_replace($class, '', 0, strlen($info[0]) + 1);
         } elseif (strtoupper($info[0]) == 'HDPHP') {
-            $base = dirname(substr_replace($class, HDPHP_PATH, 0, 6));
+            /**
+             * 框架中的类文件
+             */
+            $base = dirname(substr_replace($class, HDPHP_PATH, 0, 6)) . '/';
             $class = basename($class);
-        } elseif (in_array(strtoupper($info[0]), array("LIB", "ORG"))) {
+        } elseif (in_array($info[0], array("Lib", "Tag"))) {
+            /**
+             * 模块Lib目录文件
+             */
             $base = MODULE_PATH;
         } else {
-            //其它应用
-            $base = MODULE_PATH . '../' . $info[0] . '/';
-            $class = substr_replace($class, '', 0, strlen($info[0]) + 1);
+            /**
+             * 默认加载Lib目录下类
+             */
+            $base = dirname($class) . '/';
+            $class = basename($class);
         }
     } else {
         $base = str_replace('.', '/', $base);
     }
-    if (substr($base, -1) != '/')
-        $base .= '/';
+    /**
+     * 类文件
+     */
     $file = $base . $class . $ext;
     if (!class_exists(basename($class), false)) {
         return require_cache($file);
@@ -216,16 +233,31 @@ function import($class = null, $base = null, $ext = ".class.php")
  */
 function require_cache($path = null)
 {
+    /**
+     * 文件缓存
+     */
     static $_files = array();
-    if (is_null($path)) return $_files;
-    //缓存中存在  即代表文件已经加载  停止加载
+    /**
+     * 加载过的文件列表
+     */
+    if (is_null($path)) {
+        return $_files;
+    }
+    /**
+     * 已经加载过
+     */
     if (isset($_files[$path])) {
         return true;
     }
-    //区分大小写的文件判断
+    /**
+     * 区分大小写的文件判断
+     */
     if (!file_exists_case($path)) {
         return false;
     }
+    /**
+     * 加载文件并记录缓存
+     */
     require($path);
     $_files[$path] = true;
     return true;
@@ -866,7 +898,7 @@ function data_format(&$data, $func = null)
  */
 function _default($varName, $value = "")
 {
-    return isset($varName) && !empty($varName) ? $varName : $value;
+    return empty($varName) ?$value:$varName;
 }
 
 /**
@@ -954,28 +986,16 @@ function is_ssl()
 }
 
 /**
- * 用户定义常量
- * @param bool $view 是否显示
- * @param bool $tplConst 是否只获取__WEB__这样的常量
+ * 打印常量
  * @return array
  */
-function print_const($view = true, $tplConst = false)
+function print_const()
 {
     $define = get_defined_constants(true);
-    $const = $define['user'];
-    if ($tplConst) {
-        $const = array();
-        foreach ($define['user'] as $k => $d) {
-            if (preg_match('/^__/', $k)) {
-                $const[$k] = $d;
-            }
-        }
+    foreach ($define['user'] as $k => $d) {
+        $const[$k] = $d;
     }
-    if ($view) {
-        p($const);
-    } else {
-        return $const;
-    }
+    p($const);
 }
 
 /**
@@ -1123,7 +1143,11 @@ function hd_date($time, $format = 'Y-m-d')
  */
 function hd_substr($string, $len = 20, $end = '...')
 {
-    return mb_substr($string, 0, $len, 'utf-8') . $end;
+    $con = mb_substr($string, 0, $len, 'utf-8');
+    if ($con != $string) {
+        $con .= $end;
+    }
+    return $con;
 }
 
 /**

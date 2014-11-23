@@ -97,7 +97,7 @@ final class Debug
         $debug['file'] = require_cache();
         $debug['runtime'] = self::runtime($start, $end);
         $debug['memory'] = number_format(self::memory_perk($start, $end) / 1000, 0) . " KB";
-        require HDPHP_PATH . 'Lib/Tpl/debug.php';
+        require HDPHP_PATH . 'Lib/Tpl/debug.html';
     }
 
 }
