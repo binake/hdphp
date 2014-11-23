@@ -662,7 +662,6 @@ function go($url, $time = 0, $msg = '')
 function ip_get_client($type = 0)
 {
     $type = intval($type);
-    $ip = '';
     //保存客户端IP地址
     if (isset($_SERVER)) {
         if (isset($_SERVER["HTTP_X_FORWARDED_FOR"])) {
