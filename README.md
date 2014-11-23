@@ -18,7 +18,7 @@
 
 * HDPHP官网： [http://www.hdphp.com ](http://www.hdphp.com "HDPHP官网")
 
-![后盾网  人人做后盾](https://git.oschina.net/houdunwang/hdphp/raw/master/hdphp/Data/Image/houdunwang.jpg)  
+![后盾网  人人做后盾](http://bbs.houdunwang.com/data/attachment/forum/201309/20/231654vljezph2e7lrezf9.jpg)  
 
 ----
 # 全面的WEB开发特性支持
