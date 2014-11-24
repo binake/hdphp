@@ -17,26 +17,30 @@ abstract class Tag
 {
     /**
      * 标签左符号
+     *
      * @var bool|null
      */
     private $left;
     /**
      * 标签右符号
+     *
      * @var bool|null
      */
     private $right;
     /**
      * 比较运算符
+     *
      * @var array
      */
-    private $condition = array(
-        'neq' => '<>',
-        'eq' => '==',
-        'gt' => '>',
-        'egt' => '>=',
-        'lt' => '<',
-        'elt' => '<='
-    );
+    private $condition
+        = array(
+            'neq' => '<>',
+            'eq'  => '==',
+            'gt'  => '>',
+            'egt' => '>=',
+            'lt'  => '<',
+            'elt' => '<='
+        );
 
     /**
      * 构造函数
@@ -55,23 +59,28 @@ abstract class Tag
     /**
      * 解析标签
      * 标签解析
-     * @param $tag 标签
-     * @param $ViewContent 模板解析内容
+     *
+     * @param array   $tag         标签
+     * @param content $ViewContent 模板解析内容
+     *
      * @return mixed
      */
-    public function parseTag($tag, &$ViewContent)
+    public function parseTag($tag, &$ViewContent, &$hdView)
     {
         if ($this->tag[$tag]['block']) {
             /**
              * 块标签解析
              */
-            $preg = '#' . $this->left . $tag . '(.*)' . $this->right . '(.*)' .
-                $this->left[0] . '/' . substr($this->left, 1) . $tag . $this->right . '#isU';
+            $preg = '#' . $this->left . '(?:' . $tag . '|' . $tag . '\s+(.*))'
+                . $this->right . '(.*)' .
+                $this->left[0] . '/' . substr($this->left, 1) . $tag
+                . $this->right . '#isU';
         } else {
             /**
              * 行标签处理
              */
-            $preg = '#' . $this->left . $tag . '(.*)/?' . $this->right . "#isU"; //独立正则
+            $preg = '#' . $this->left . '(?:' . $tag . '|' . $tag . '\s+(.*))/'
+                . $this->right . "#isU"; //独立正则
         }
         /**
          * 找到所有当前标签名的内容区域
@@ -94,10 +103,14 @@ abstract class Tag
                 /**
                  * 标签内容
                  */
-                $k[2] = isset($k[2]) ? $k['2'] : '';
-                $content = call_user_func_array(array($this, '_' . $tag), array($attr, $k[2], &$this->view));
+                $k[2]        = isset($k[2]) ? $k['2'] : '';
+                $content     = call_user_func_array(
+                    array($this, '_' . $tag), array($attr, $k[2], &$hdView)
+                );
                 $ViewContent = str_replace($k[0], $content, $ViewContent);
             }
+
+            return true;
         } else {
             return false;
         }
@@ -105,7 +118,9 @@ abstract class Tag
 
     /**
      * 解析标签属性
+     *
      * @param string $attrStr 标签字符串
+     *
      * @return array 标签名如foreach
      */
     protected function parseTagAttr($attrStr)
@@ -126,6 +141,7 @@ abstract class Tag
                  */
                 $attr[$k[1]] = $this->parseAttrValue($k[3]);
             }
+
             return $attr;
         } else {
             return array();
@@ -134,7 +150,9 @@ abstract class Tag
 
     /**
      * 解析属性值
+     *
      * @param $attrValue 属性值
+     *
      * @return mixed
      */
     protected function parseAttrValue($attrValue)
@@ -160,11 +178,11 @@ abstract class Tag
         /**
          * 解析变量为PHP可识别状态
          */
-        $preg = '@\$([\w\.]+)@i';
+        $preg   = '@\$([\w\.]+)@i';
         $status = preg_match_all($preg, $attrValue, $info, PREG_SET_ORDER);
         if ($status) {
             foreach ($info as $i => $d) {
-                $var = '';
+                $var  = '';
                 $data = explode('.', $d[1]);
                 foreach ($data as $n => $m) {
                     if ($n == 0) {
@@ -175,6 +193,7 @@ abstract class Tag
                 }
                 $attrValue = str_replace($d[1], $var, $attrValue);
             }
+
             return $attrValue;
         } else {
             return $attrValue;

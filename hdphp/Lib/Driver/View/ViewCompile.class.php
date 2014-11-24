@@ -13,6 +13,7 @@ import('HDPHP.Lib.Driver.View.Tag');
 
 /**
  * HD模板引擎编译处理类
+ *
  * @package     View
  * @subpackage  HDPHP模板
  * @author      后盾向军 <2300071698@qq.com>
@@ -21,24 +22,36 @@ class ViewCompile
 {
     /**
      * HdView视图对象
+     *
      * @var Object
      */
     private $view;
     /**
      * 模板编译内容
+     *
      * @var
      */
     private $content;
     /**
      * 别名函数
+     *
      * @var array
      */
-    private $aliasFunction = array(
-        'default' => '_default'
-    );
+    private $aliasFunction
+        = array(
+            'default' => '_default'
+        );
+    /**
+     * 不解析内容
+     * a) 先将不解析内容放入数组中
+     * b) 然后将从内容替换
+     *
+     * @var array
+     */
+    private $literal = array();
 
     /**
-     * @param Object $view HdView对象
+     * 构造函数
      */
     function __construct()
     {
@@ -57,6 +70,10 @@ class ViewCompile
          */
         $this->content = file_get_contents($this->view->tplFile);
         /**
+         * 获得不解析内容
+         */
+        $this->getNoParseContent();
+        /**
          * 加载标签类
          * 标签由系统标签与用户扩展标签构成
          */
@@ -74,10 +91,15 @@ class ViewCompile
          */
         $this->parseTokey();
         /**
-         * 将Literal内容替换
+         * 将不解析内容还原
          */
-        $this->replaceLiteral();
-        $this->content = '<?php if(!defined("HDPHP_PATH"))exit;C("SHOW_NOTICE",FALSE);?>' . $this->content;
+        $this->replaceNoParseContent();
+        /**
+         * 编译内容
+         */
+        $this->content
+            ="<?php if(!defined('HDPHP_PATH'))exit;C('SHOW_NOTICE',FALSE);?>\n"
+            . $this->content;
         /**
          * 创建编译目录与安全文件
          */
@@ -87,6 +109,39 @@ class ViewCompile
          * 储存编译文件
          */
         file_put_contents($this->view->compileFile, $this->content);
+    }
+
+    /**
+     * 获得不解析内容
+     */
+    private function getNoParseContent()
+    {
+        $status = preg_match_all(
+            '@<literal>(.*?)<\/literal>@isU', $this->content, $info,
+            PREG_SET_ORDER
+        );
+        if ($status) {
+            foreach ($info as $n => $content) {
+                if ( ! empty($content)) {
+                    $this->literal[$n] = $content[1];
+                    $this->content     = str_replace(
+                        $content[0], '###' . $n . '###', $this->content
+                    );
+                }
+            }
+        }
+    }
+
+    /**
+     * 将记录的不解析内容替换回来
+     */
+    private function replaceNoParseContent()
+    {
+        foreach ($this->literal as $n => $content) {
+            $this->content = str_replace(
+                '###' . $n . '###', $content, $this->content
+            );
+        }
     }
 
     /**
@@ -111,7 +166,7 @@ class ViewCompile
         /**
          * 导入用户定义标签库
          */
-        if (!empty($tags) && is_array($tags)) {
+        if ( ! empty($tags) && is_array($tags)) {
             /**
              * 压入标签类
              */
@@ -119,13 +174,18 @@ class ViewCompile
                 /**
                  * 导入标签类
                  */
-                if (import($file) || import($file, MODULE_TAG_PATH) || import($file, APP_TAG_PATH)) {
+                if (import($file) || import($file, MODULE_TAG_PATH)
+                    || import($file, APP_TAG_PATH)
+                ) {
                     //类名
                     $class = basename($file);
                     /**
                      * 合法标签类必须包含Tag属性
                      */
-                    if (class_exists($class, false) && property_exists($class, 'tag') && get_parent_class($class) == 'Tag') {
+                    if (class_exists($class, false)
+                        && property_exists($class, 'tag')
+                        && get_parent_class($class) == 'Tag'
+                    ) {
                         $tagClass[] = $class;
                     }
                 }
@@ -147,52 +207,43 @@ class ViewCompile
                  * 合法标签满足以下条件
                  * b) 定义了block与level值
                  */
-                if (!isset($option['block']) || !isset($option['level'])) {
+                if ( ! isset($option['block'])
+                    || ! isset($option['level'])
+                ) {
                     continue;
                 }
                 /**
                  * 解析标签
                  */
                 for ($i = 0; $i <= $option['level']; $i++) {
-                    if (!$obj->parseTag($tag, $this->content)) {
+                    if ( ! $obj->parseTag($tag, $this->content, $this->view)
+                    ) {
                         break;
                     }
                 }
             }
-            /**
-             * 释放对象
-             */
-            unset($obj);
         }
-    }
-
-    /**
-     * 不解析内容即literal标签包裹内容
-     */
-    private function replaceLiteral()
-    {
-        $literal = ViewTag::$literal;
-        foreach ($literal as $id => $content) {
-            $this->content = str_replace('###hd:Literal' . $id . '###', $content, $this->content);
-        }
-        ViewTag::$literal = array();
     }
 
     /**
      * 解析变量
+     *
      * @return mixed
      */
     private function parseVar()
     {
-        $preg = '#\{(\$[\w\.]+)?(?:\|(.*))?\}#isU';
-        $status = preg_match_all($preg, $this->content, $info, PREG_SET_ORDER);
+        $preg   = '#\{(\$[\w\.]+)?(?:\|(.*))?\}#isU';
+        $status = preg_match_all(
+            $preg, $this->content, $info,
+            PREG_SET_ORDER
+        );
         if ($status) {
             foreach ($info as $d) {
                 /**
                  * 变量
                  */
                 $var = '';
-                if (!empty($d[1])) {
+                if ( ! empty($d[1])) {
                     $data = explode('.', $d[1]);
                     foreach ($data as $n => $m) {
                         if ($n == 0) {
@@ -205,7 +256,7 @@ class ViewCompile
                 /**
                  * 函数
                  */
-                if (!empty($d[2])) {
+                if ( ! empty($d[2])) {
                     $functions = explode('|', $d[2]);
                     foreach ($functions as $func) {
                         /**
@@ -217,7 +268,7 @@ class ViewCompile
                          * 函数名
                          * 别名函数中存在时，使用别名函数
                          */
-                        if ($this->aliasFunction[$tmp[0]]) {
+                        if (isset($this->aliasFunction[$tmp[0]])) {
                             $name = $this->aliasFunction[$tmp[0]];
                         } else {
                             $name = $tmp[0];
@@ -240,7 +291,7 @@ class ViewCompile
                         $var = $name . '(' . $var . ')';
                     }
                 }
-                $replace = '<?php echo ' . $var . ';?>';
+                $replace       = '<?php echo ' . $var . ';?>';
                 $this->content = str_replace($d[0], $replace, $this->content);
             }
         }
@@ -252,10 +303,13 @@ class ViewCompile
      */
     private function parseTokey()
     {
-        if (!C("TOKEN_ON")) return;
+        if ( ! C("TOKEN_ON")) {
+            return;
+        }
         Token::create(); //生成token
         $preg = '/<\/form>/iUs';
-        $content = '<input type="hidden" name="<?php echo C("TOKEN_NAME");?>" value="<?php echo $_SESSION[C("TOKEN_NAME")]?>"/></form>';
+        $content
+                       = '<input type="hidden" name="<?php echo C("TOKEN_NAME");?>" value="<?php echo $_SESSION[C("TOKEN_NAME")]?>"/></form>';
         $this->content = preg_replace($preg, $content, $this->content);
     }
 
