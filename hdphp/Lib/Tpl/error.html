@@ -1,32 +1,45 @@
-<!DOCTYPE html>
-<html>
-	<head>
-		<meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
-		<title>操作失败</title>
-		<link rel="stylesheet" type="text/css" href="__HDPHP_TPL__/static/css.css"/>
-        <style type="text/css">
-            body{background: #f3f3f3;}
-        </style>
-	</head>
-	<body>
-		<div class="wrap">
-			<div class="title">
-				操作失败
-			</div>
-			<div class="content">
-				<div class="icon"></div>
-				<div class="message">
-					<p>
-						{$message}
-					</p>
-					<a href="javascript:{$url}" class="hd-cancel">
-						返回
-					</a>
-				</div>
-			</div>
-		</div>
-		<script type="text/javascript">
-			window.setTimeout("{$url}",{$time}*1000);
-		</script>
-	</body>
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>操作成功</title>
+    <style type="text/css">
+        div#main {
+            padding: 20px 50px;
+            font-family: "Microsoft Yahei", Helvetica, arial, sans-serif;
+            color:#333;
+        }
+
+        div#main h1 {
+            font-size: 100px;
+            font-weight: normal;
+            margin: 0px;
+            padding-bottom: 30px;
+        }
+
+        div#main div.hdphp {
+            font-size: 40px;
+            color: #333;
+        }
+
+        div#main div.path {
+            font-size: 26px;
+            margin-top: 30px;
+        }
+    </style>
+</head>
+<body>
+<div id="main">
+    <h1>:(</h1>
+    <div class="hdphp">{$message}</div>
+    <div class="path">
+        {$time}秒后将进行跳转...
+        <script type="text/javascript">
+            setTimeout(function(){
+                {$url}
+            },{$time}*1000);
+        </script>
+    </div>
+</div>
+</body>
 </html>
