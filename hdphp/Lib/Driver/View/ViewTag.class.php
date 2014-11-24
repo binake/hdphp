@@ -27,22 +27,17 @@ class ViewTag extends Tag
     public $tag
         = array(
             'foreach' => array('block' => 1, 'level' => 4),
-            'while'   => array('block' => 1, 'level' => 4),
+            'list'    => array('block' => 1, 'level' => 5),
             'if'      => array('block' => 1, 'level' => 5),
             'elseif'  => array('block' => 0, 'level' => 0),
             'else'    => array('block' => 0, 'level' => 0),
-            'switch'  => array('block' => 1, 'level' => 0),
-            'case'    => array('block' => 1, 'level' => 0),
-            'break'   => array('block' => 0, 'level' => 0),
-            'default' => array('block' => 0, 'level' => 0),
+
+            'while'   => array('block' => 1, 'level' => 4),
             'include' => array('block' => 0, 'level' => 0),
-            'list'    => array('block' => 1, 'level' => 5),
             'js'      => array('block' => 0, 'level' => 0),
             'css'     => array('block' => 0, 'level' => 0),
             'noempty' => array('block' => 0, 'level' => 0),
             'jsconst' => array('block' => 0, 'level' => 1),
-            'define'  => array('block' => 0, 'level' => 0)
-
         );
 
     /**
@@ -50,15 +45,6 @@ class ViewTag extends Tag
      */
     public function __init()
     {
-    }
-
-    //格式化参数 字符串加引号
-    private function formatArg($arg)
-    {
-        $valueFormat = trim(trim($arg, "'"), '"');
-
-        return is_numeric($valueFormat) ? $valueFormat
-            : '"' . $valueFormat . '"';
     }
 
     /**
@@ -81,21 +67,6 @@ class ViewTag extends Tag
 
         return $attr;
     }
-
-    //定义常量
-    public function _define($attr, $content)
-    {
-        $name  = $attr['name'];
-        $value = is_numeric($attr['value']) ? $attr['value']
-            : "'" . $attr['value'] . "'";
-        $str   = "";
-        $str .= "<?php ";
-        $str .= "define('{$name}',$value);";
-        $str .= ";?>";
-
-        return $str;
-    }
-
 
     //加载CSS文件
     public function _css($attr, $content)
@@ -228,47 +199,6 @@ php;
         return $view->getCompileContent();
     }
 
-    public function _switch($attr, $content, $res)
-    {
-        $value = $attr['value'];
-        $php   = ''; //组合成PHP
-        $php .= '<?php ' . " switch($value):?>\r\n";
-        $php .= preg_replace("/\s*<case/i", "<case", $content);
-        $php .= ' <?php endswitch;?>';
-
-        return $php;
-    }
-
-    public function _case($attr, $content, $res)
-    {
-        $value = $this->formatArg($attr['value']);
-        $php   = ''; //组合成PHP
-        $php .= '<?php ' . " case $value:{?>";
-        $php .= $content;
-        $php .= ' <?php break;}?>';
-
-        return $php;
-    }
-
-    public function _break($attr, $content, $res)
-    {
-        return '<?php break; ?>';
-    }
-
-    public function _default($attr, $content, $res)
-    {
-        return '<?php default; ?>';
-    }
-
-    /**
-     * if标签
-     *
-     * @param $attr
-     * @param $content
-     * @param $res
-     *
-     * @return string
-     */
     public function _if($attr, $content, &$hd)
     {
         $php
@@ -279,15 +209,6 @@ php;
         return $php;
     }
 
-    /**
-     * else if标签
-     *
-     * @param $attr
-     * @param $content
-     * @param $res
-     *
-     * @return string
-     */
     public function _elseif($attr, $content, $res)
     {
         $php = "<?php }else if({$attr['value']}){ ?>";
@@ -296,15 +217,6 @@ php;
         return $php;
     }
 
-    /**
-     * else标签
-     *
-     * @param $attr
-     * @param $content
-     * @param $res
-     *
-     * @return string
-     */
     public function _else($attr, $content, $res)
     {
         return "<?php }else{ ?>";
