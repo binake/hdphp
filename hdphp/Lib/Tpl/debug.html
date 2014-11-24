@@ -1,30 +1,26 @@
-<?php if (!defined('HDPHP_PATH')) exit; ?>
-<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <style type="text/css">
     div#hd_debug {
-        font-family: "微软雅黑";
+        font-family: "Microsoft Yahei";
+        font-size:12px;
         position: fixed;
         left: 0px;
         right: 0px;
         bottom: 0px;;
         height: 235px;
-        z-index: 2000;
-        font-size: 12px;
-        padding: 0px;
-        margin: 0px;
+        z-index: 1500;
         overflow: hidden;
-        background: #ffffff;
-        padding-top:3px;
-        _position: absolute;
-        _bottom:0px;
+        background: #F7F7F7;
     }
     div#hd_debug a {
-        color: #005e15;
+        color: #333;
         text-decoration: none;
     }
     div#hd_debug div#debug_menu {
-        height: 25px;
-        border-bottom: solid 5px #027d39;
+        color:#333;
+        height: 26px;
+        border-top: solid 1px #aaaaaa;
+        border-bottom: solid 1px #aaaaaa;
+        overflow: hidden;
     }
 
     div#hd_debug div#debug_menu ul {
@@ -34,26 +30,20 @@
     }
 
     div#hd_debug div#debug_menu ul li {
-        font-weight: bold;
-        background: #eee;
-        color:#005e15;
         float: left;
+        font-size: 12px;
         cursor: pointer;
-        height: 24px;
         width: 65px;
         text-align: center;
         line-height: 28px;
         overflow: hidden;
-        border: solid 1px #32b16c;
-        border-bottom: none;
-        margin-right: 6px;
+        border-right: solid 1px #aaaaaa;
+        padding: 0px 12px;
     }
 
     div#hd_debug div#debug_menu ul li.active {
-        background: #027d39;
+        background: #4C9ED9;
         color: #fff;
-        height: 25px;
-        border: none;
     }
 
     div#hd_debug div#debug_con div {
@@ -61,23 +51,15 @@
         height: 200px;
         overflow-x: hidden;
         overflow-y: auto;
-        background: #f3f3f3;
     }
-
     div#hd_debug div#debug_con div.active {
         display: block;
     }
-
     div#hd_debug div#debug_con div table {
         width: 100%;
         border-collapse: collapse;
     }
-
-    div#hd_debug div#debug_con div table thead tr {
-        background: #f3f3f3;
-    }
     div#hd_debug div#debug_con div table thead tr td{
-        background: #F3F3F3;
         font-weight: normal;
     }
     div#hd_debug div#debug_con div table tr td {
@@ -87,26 +69,27 @@
         color: #666;
         padding: 0px 8px;
         word-break: break-all;
-        background: #fff;
         height: 25px;
         text-align: left;
     }
     #hd_debug_bt {
-        background: url("<?php echo __HDPHP__;?>/Lib/Tpl/static/debug.png") no-repeat;
-        border-radius: 0px;
+        font-size:16px;
+        font-family: "Microsoft Yahei";
+        line-height: 1.5em;
+        color:#666;
+        text-align: center;
+        background: #F3F3F3;
+        border:solid 1px #B3B3B3;
+        box-shadow: 0px 0px 3px #ccc;
         cursor: pointer;
         z-index: 2000;
-        width: 30px;
-        height:30px;
-        text-indent: -9999px;
+        width: 23px;
+        height:23px;
         position: fixed;
         bottom: 5px;
-        position: fixed;
         top:50%;
         right:10px;
         display:block;
-        border-radius: 2px;
-        _position: absolute;
     }
 </style>
 
@@ -126,9 +109,7 @@
             <li id="_post">POST</li>
             <li id="_get">GET</li>
             <li><a href="http://www.hdphp.com" target="_blank">官网</a></li>
-            <li style="width:80px;"><a href="http://www.houdunwang.com" target="_blank">PHP实训</a></li>
-<!--            <li><a href="http://www.kuaipinwang.com" target="_blank">快聘网</a></li>-->
-<!--            <li><a href="http://www.kuaixuewang.com" target="_blank">快学网</a></li>-->
+            <li><a href="http://www.houdunwang.com" target="_blank">PHP实训</a></li>
         </ul>
     </div>
     <div id="debug_con">
@@ -165,7 +146,8 @@
                 </tr>
                 <tr>
                     <td>框架版本</td>
-                    <td><?php echo HDPHP_VERSION ?>
+                    <td>
+                        <?php echo HDPHP_VERSION ?>
                         <a href='http://www.hdphp.com' target='_blank'>查看新版</a>
                     </td>
                 </tr>
@@ -369,7 +351,7 @@
 </script>
 
 <!--开启debug按钮-->
-<div id="hd_debug_bt">HDPHP </div>
+<div id="hd_debug_bt">H</div>
 <script>
     var _hd_debug_bt = document.getElementById("hd_debug_bt");
     var _hd_debug = document.getElementById("hd_debug");

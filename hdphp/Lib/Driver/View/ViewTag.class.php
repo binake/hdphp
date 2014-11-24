@@ -29,20 +29,20 @@ class ViewTag extends Tag
         'foreach' => array('block' => 1, 'level' => 4),
         'while' => array('block' => 1, 'level' => 4),
         'if' => array('block' => 1, 'level' => 5),
-        'elseif' => array('block' => 0,level=>0),
-        'else' => array('block' => 0,level=>0),
-        'switch' => array('block' => 1,level=>5),
-        'case' => array('block' => 1),
-        'break' => array('block' => 0,level=>0),
-        'default' => array('block' => 0,level=>0),
-        'include' => array('block' => 0,level=>0),
+        'elseif' => array('block' => 0,'level'=>0),
+        'else' => array('block' => 0,'level'=>0),
+        'switch' => array('block' => 1,'level'=>0),
+        'case' => array('block' => 1,'level'=>0),
+        'break' => array('block' => 0,'level'=>0),
+        'default' => array('block' => 0,'level'=>0),
+        'include' => array('block' => 0,'level'=>0),
         'list' => array('block' => 1, 'level' => 5),
-        'js' => array('block' => 0,level=>0),
-        'css' => array('block' => 0,level=>0),
-        'noempty' => array('block' => 0,level=>0),
-        'jsconst' => array('block' => 0,level=>0), //定义JS常量
-        'define' => array('block' => 0,level=>0),
-        'literal' => array('block' => 1, 'level' => 1),//Literal 标签区域内的数据将被当作文本处理
+        'js' => array('block' => 0,'level'=>0),
+        'css' => array('block' => 0,'level'=>0),
+        'noempty' => array('block' => 0,'level'=>0),
+        'jsconst' => array('block' => 0,'level'=>0),
+        'define' => array('block' => 0,'level'=>0),
+        'literal' => array('block' => 1, 'level' => 1)
     );
 
     /**
