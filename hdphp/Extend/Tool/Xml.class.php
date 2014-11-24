@@ -4,7 +4,7 @@
 // |   Version: 2013.01
 // |      Site: http://www.hdphp.com
 // |-----------------------------------------------------------------------------------
-// |    Author: 向军 <houdunwangxj@gmail.com>
+// |    Author: 向军 <2300071698@qq.com>
 // | Copyright (c) 2012-2013, http://houdunwang.com. All Rights Reserved.
 // |-----------------------------------------------------------------------------------
 // |   License: http://www.apache.org/licenses/LICENSE-2.0
@@ -21,7 +21,9 @@ class Xml
 
     /**
      * 解析XML文件
+     *
      * @param type $xml
+     *
      * @return type
      */
 
@@ -37,10 +39,12 @@ class Xml
 
     /**
      * 创建xml文件
-     * @param array $data       数据
-     * @param string $root      根据节点
-     * @param string $encoding  编码
-     * @return string           XML字符串
+     *
+     * @param array  $data     数据
+     * @param string $root     根据节点
+     * @param string $encoding 编码
+     *
+     * @return string          XML字符串
      */
     static public function create($data, $root = null, $encoding = "UTF-8")
     {
@@ -53,6 +57,11 @@ class Xml
         return $xml;
     }
 
+    /**
+     * 格式化XML
+     * @param $data
+     * @return string
+     */
     static private function formatXml($data)
     {
         if (is_object($data)) {
@@ -66,7 +75,8 @@ class Xml
             $xml .= "<$k>";
             if (is_object($v) || is_array($v)) {
                 $xml .= self::formatXml($v);
-            } else {
+            }
+            else {
                 $xml .= str_replace(array("&", "<", ">", "\"", "'", "-"), array("&amp;", "&lt;", "&gt;", "&quot;", "&apos;", "&#45;"), $v);
             }
             list($k,) = explode(" ", $k);
@@ -77,7 +87,9 @@ class Xml
 
     /**
      * 将XML字符串或文件转为数组
-     * @param string $xml   XML字符串或XML文件
+     *
+     * @param string $xml XML字符串或XML文件
+     *
      * @return array        解析后的数组
      */
     static public function toArray($xml)
@@ -89,8 +101,10 @@ class Xml
 
     /**
      * 解析编译后的内容为数组
-     * @param array $arrData     数组数据
-     * @param int $i 层级
+     *
+     * @param array $arrData 数组数据
+     * @param int   $i       层级
+     *
      * @return array    数组
      */
     static private function getData($arrData, &$i)

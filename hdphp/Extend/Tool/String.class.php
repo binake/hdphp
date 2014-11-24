@@ -4,7 +4,7 @@
 // |   Version: 2013.01
 // |      Site: http://www.hdphp.com
 // |-----------------------------------------------------------------------------------
-// |    Author: 向军 <houdunwangxj@gmail.com>
+// |    Author: 向军 <2300071698@qq.com>
 // | Copyright (c) 2012-2013, http://houdunwang.com. All Rights Reserved.
 // |-----------------------------------------------------------------------------------
 // |   License: http://www.apache.org/licenses/LICENSE-2.0
@@ -42,8 +42,9 @@ final class String
 
     /**
      * UTF8编码转GBK编码
-     * @param type $str字符串
-     * @return type
+     * @param $str
+     *
+     * @return string
      */
     static public function utf8ToGbk($str)
     {

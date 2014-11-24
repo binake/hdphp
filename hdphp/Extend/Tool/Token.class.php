@@ -1,18 +1,24 @@
 <?php
-
 // .-----------------------------------------------------------------------------------
 // |  Software: [HDPHP framework]
-// |   Version: 2013.03
+// |   Version: 2013.01
 // |      Site: http://www.hdphp.com
 // |-----------------------------------------------------------------------------------
-// |    Author: 向军 <houdunwangxj@gmail.com>
+// |    Author: 向军 <2300071698@qq.com>
 // | Copyright (c) 2012-2013, http://houdunwang.com. All Rights Reserved.
 // |-----------------------------------------------------------------------------------
 // |   License: http://www.apache.org/licenses/LICENSE-2.0
 // '-----------------------------------------------------------------------------------
+/**
+ * 令牌操作
+ * Class Token
+ */
 final class Token
 {
-
+    /**
+     * 加密Key
+     * @var string
+     */
     public static $key = "houdunwang.com";
 
     /**
@@ -44,7 +50,8 @@ final class Token
          */
         if (C("TOKEN_ON")) {
             return session(C("TOKEN_NAME")) == Q(C("TOKEN_NAME"));
-        } else {
+        }
+        else {
             return true;
         }
     }
