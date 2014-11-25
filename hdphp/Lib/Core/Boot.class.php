@@ -272,7 +272,6 @@ final class Boot
             HDPHP_DRIVER_PATH . 'Model/RelationModel.class.php', //关联模型类
             HDPHP_DRIVER_PATH . 'Model/ViewModel.class.php', //视图模型类
             HDPHP_DRIVER_PATH . 'View/ViewHd.class.php', //Hd视图驱动类
-            HDPHP_DRIVER_PATH . 'View/View.class.php', //视图库
             HDPHP_DRIVER_PATH . 'View/ViewFactory.class.php', //视图工厂库
             HDPHP_DRIVER_PATH . 'View/ViewCompile.class.php', //模板编译类
             HDPHP_EXTEND_PATH . 'Tool/Dir.class.php', //目录操作类

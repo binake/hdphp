@@ -12,16 +12,12 @@
 
 /**
  * 表单验证处理类
+ *
  * @package     tools_class
  * @author      后盾向军 <2300071698@qq.com>
  */
 class Validate
 {
-    /**
-     * 错误信息
-     * @var bool
-     */
-    public $error = false; //验证错误信息  初始没有错误信息
 
     /**
      * 内容不能为空
@@ -32,12 +28,13 @@ class Validate
      *
      * @return bool
      */
-    public function _nonull($name, $value, $msg)
+    public function _nonull($name, $value, $msg, $arg)
     {
         if (empty($value)) {
             return $msg;
+        } else {
+            return true;
         }
-        return true;
     }
 
     /**
@@ -49,13 +46,15 @@ class Validate
      *
      * @return bool
      */
-    public function _email($name, $value, $msg)
+    public function _email($name, $value, $msg, $arg)
     {
-        $preg = "/^([a-zA-Z0-9_\-\.])+@([a-zA-Z0-9_-])+((\.[a-zA-Z0-9_-]{2,3}){1,2})$/i";
+        $preg
+            = "/^([a-zA-Z0-9_\-\.])+@([a-zA-Z0-9_-])+((\.[a-zA-Z0-9_-]{2,3}){1,2})$/i";
         if (preg_match($preg, $value)) {
             return true;
+        } else {
+            return $msg;
         }
-        return $msg;
     }
 
     /**
@@ -69,13 +68,11 @@ class Validate
      */
     public function _maxlen($name, $value, $msg, $arg)
     {
-        if (!is_numeric($arg)) {
-            halt('验证规则的maxlen参数必须为数字');
-        }
         if (mb_strlen($value, 'utf-8') <= $arg) {
             return true;
+        } else {
+            return $msg;
         }
-        return $msg;
     }
 
     /**
@@ -89,13 +86,11 @@ class Validate
      */
     public function _minlen($name, $value, $msg, $arg)
     {
-        if (!is_numeric($arg)) {
-            halt('验证规则的minlen参数必须为数字');
-        }
         if (mb_strlen($value, 'utf-8') >= $arg) {
             return true;
+        } else {
+            return $msg;
         }
-        return $msg;
     }
 
     /**
@@ -109,11 +104,13 @@ class Validate
      */
     public function _http($name, $value, $msg, $arg)
     {
-        $preg = "/^(http[s]?:)?(\/{2})?([a-z0-9]+\.)?[a-z0-9]+(\.(com|cn|cc|org|net|com.cn))$/i";
+        $preg
+            = "/^(http[s]?:)?(\/{2})?([a-z0-9]+\.)?[a-z0-9]+(\.(com|cn|cc|org|net|com.cn))$/i";
         if (preg_match($preg, $value)) {
             return true;
+        } else {
+            return $msg;
         }
-        return $msg;
     }
 
     /**
@@ -130,8 +127,9 @@ class Validate
         $preg = "/(?:\(\d{3,4}\)|\d{3,4}-?)\d{8}/";
         if (preg_match($preg, $value)) {
             return true;
+        } else {
+            return $msg;
         }
-        return $msg;
     }
 
     /**
@@ -148,8 +146,9 @@ class Validate
         $preg = "/^\d{11}$/";
         if (preg_match($preg, $value)) {
             return true;
+        } else {
+            return $msg;
         }
-        return $msg;
     }
 
     /**
@@ -166,8 +165,9 @@ class Validate
         $preg = "/^(\d{15}|\d{18})$/";
         if (preg_match($preg, $value)) {
             return true;
+        } else {
+            return $msg;
         }
-        return $msg;
     }
 
     /**
@@ -181,13 +181,14 @@ class Validate
      */
     public function _user($name, $value, $msg, $arg)
     {
+        //用户名长度
+        $len = mb_strlen($value, 'utf-8');
         $arg = explode(',', $arg);
-        $startLen = $arg[0] - 1;
-        $preg = "/^[a-zA-Z]\w{" . $startLen . ',' . $arg[1] . "}$/";
-        if (preg_match($preg, $value)) {
+        if ($len >= $arg[0] && $len <= $arg[1]) {
             return true;
+        } else {
+            return $msg;
         }
-        return $msg;
     }
 
     /**
@@ -204,8 +205,9 @@ class Validate
         $arg = explode(',', $arg);
         if ($value >= $arg[0] && $value <= $arg[1]) {
             return true;
+        } else {
+            return $msg;
         }
-        return $msg;
     }
 
     /**
@@ -221,8 +223,9 @@ class Validate
     {
         if (preg_match($preg, $value)) {
             return true;
+        } else {
+            return $msg;
         }
-        return $msg;
     }
 
     /**
@@ -238,8 +241,9 @@ class Validate
     {
         if ($value == $_POST[$arg]) {
             return true;
+        } else {
+            return $msg;
         }
-        return $msg;
     }
 
     /**
@@ -255,8 +259,9 @@ class Validate
     {
         if (preg_match('/^[\x{4e00}-\x{9fa5}a-z0-9]+$/ui', $value)) {
             return true;
+        } else {
+            return $msg;
         }
-        return $msg;
     }
 
 }

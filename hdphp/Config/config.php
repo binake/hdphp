@@ -16,7 +16,6 @@ return array(
     'DB_PASSWORD'                   => '',          //数据库密码
     'DB_DATABASE'                   => '',          //数据库名称
     'DB_PREFIX'                     => '',          //表前缀
-    'DB_BACKUP'                     => 'backup/',   //数据库备份目录
     'DB_PCONNECT'                   => false,       //数据库持久链接
     'CACHE_SELECT_TIME'             => -1,          //缓存时间 -1为不缓存 0为永久缓存
     'CACHE_SELECT_LENGTH'           => 30,          //缓存最大条数

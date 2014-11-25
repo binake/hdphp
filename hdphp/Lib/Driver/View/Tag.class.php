@@ -67,7 +67,7 @@ abstract class Tag
      */
     public function parseTag($tag, &$ViewContent, &$hdView)
     {
-        if ($this->tag[$tag]['block']) {
+        if ($this->Tag[$tag]['block']) {
             /**
              * 块标签解析
              */

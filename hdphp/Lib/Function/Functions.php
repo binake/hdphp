@@ -191,7 +191,7 @@ function import($class = null, $base = null, $ext = ".class.php")
     $class = str_replace(".", "/", $class);
     if (is_null($base)) {
         $info = explode("/", $class);
-        if ($info[0] == '@' || APP == $info[0]) {
+        if ($info[0] == '@') {
             /**
              * 应用下类文件
              */
@@ -1720,54 +1720,6 @@ function extension_exists($ext)
     return in_array($ext, array_change_value_case($loaded_extensions, 0));
 }
 
-/**
- * 调用标签函数
- * @param        $tag     标签名
- * @param array  $attr    属性
- * @param string $content 内容
- * @return bool
- */
-function tag($tag, $attr = array(), $content = "")
-{
-    $tag = "_" . $tag;
-    //标签库类
-    $tagClass = array();
-    //加载扩展标签库
-    $tags = C('TPL_TAGS');
-    //如果配置文件中存在标签定义
-    if (!empty($tags) && is_array($tags)) {
-        //加载其他模块或应用中的标签库
-        foreach ($tags as $k) {
-            //如果拆分后大于1的为其他模块或应用的标签定义
-            $arr = explode('.', $k);
-            if (import($k)) {
-                //压入标签库类
-                $tagClass[] = array_pop($arr);
-            }
-        }
-    }
-    //加载框架核心标签库
-    $tagClass[] = 'ViewTag';
-    foreach ($tagClass as $_class) {
-        $obj = new $_class;
-        if (method_exists($obj, $tag)) {
-            return $obj->$tag($attr, $content);
-        }
-    }
-    return false;
-}
-
-/**
- * 创建目录安全文件
- * @param $dirs
- */
-function safeFile($dirs)
-{
-    $file = HDPHP_TPL . '/index.html';
-    foreach ($dirs as $d) {
-        is_file($d . '/index.html') || copy($file, $d . '/index.html');
-    }
-}
 
 /**
  * 数组进行整数映射转换

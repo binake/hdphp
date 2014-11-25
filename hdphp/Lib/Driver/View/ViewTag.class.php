@@ -20,83 +20,44 @@
 class ViewTag extends Tag
 {
     /**
-     * block 块标签       1为块标签  0独立标签
-     * 块标题不用设置，行标签必须设置
-     * 设置时不用加前面的_
+     * block 块标签
+     * level 嵌套层次
+     *
+     * @var array
      */
-    public $tag
+    public $Tag
         = array(
-            'foreach' => array('block' => 1, 'level' => 4),
+            'foreach' => array('block' => 1, 'level' => 5),
             'list'    => array('block' => 1, 'level' => 5),
             'if'      => array('block' => 1, 'level' => 5),
             'elseif'  => array('block' => 0, 'level' => 0),
             'else'    => array('block' => 0, 'level' => 0),
-
-            'while'   => array('block' => 1, 'level' => 4),
-            'include' => array('block' => 0, 'level' => 0),
             'js'      => array('block' => 0, 'level' => 0),
             'css'     => array('block' => 0, 'level' => 0),
-            'noempty' => array('block' => 0, 'level' => 0),
+            'include' => array('block' => 0, 'level' => 0),
             'jsconst' => array('block' => 0, 'level' => 1),
+            'empty'   => array('block' => 1, 'level' => 5),
+            'noempty' => array('block' => 0, 'level' => 0),
         );
 
-    /**
-     * 构造函数
-     */
+    //构造函数
     public function __init()
     {
     }
 
-    /**
-     * 替换标签属性变量或常量为php表示形式
-     *
-     * @param array $attr 标签属性
-     * @param bool  $php  返回PHP语法格式
-     *
-     * @return mixed
-     */
-    private function replaceAttrConstVar($attr, $php = true)
+    //css标签
+    public function _css($attr, $content, &$hd)
     {
-        foreach ($attr as $k => $at) {
-            //替换变量
-            $attr[$k] = preg_replace(
-                '/\$\w+\[.*\](?!=\[)|\$\w+(?!=[a-z])/', '<?php echo \0;?>',
-                $attr[$k]
-            );
-        }
-
-        return $attr;
+        return "<link type='text/css' rel='stylesheet' href='{$attr['file']}'/>";
     }
 
-    //加载CSS文件
-    public function _css($attr, $content)
+    //js标签
+    public function _js($attr, $content, &$hd)
     {
-        $attr = $this->replaceAttrConstVar($attr, true);
-
-        return '<link type="text/css" rel="stylesheet" href="' . $attr['file']
-        . '"/>';
+        return "<script type='text/javascript' src='{$attr['file']}'></script>";
     }
 
-    public function _js($attr, $content)
-    {
-        if ( ! isset($attr['file'])) {
-            return;
-        }
-        $attr = $this->replaceAttrConstVar($attr, true);
-
-        return '<script type="text/javascript" src="' . $attr['file']
-        . '"></script>';
-    }
-
-    /**
-     * list标签
-     *
-     * @param Array  $attr    属性
-     * @param String $content 内容
-     * @param Object $hd      视图对象
-     *
-     * @return string
-     */
+    //list标签
     public function _list($attr, $content, &$hd)
     {
         //变量
@@ -157,14 +118,7 @@ php;
         return $php;
     }
 
-    /**
-     * 标签处理
-     *
-     * @param $attr    属性值
-     * @param $content 内容
-     *
-     * @return string
-     */
+    //标签处理
     public function _foreach($attr, $content)
     {
         $php
@@ -175,30 +129,23 @@ php;
         return $php;
     }
 
-    /**
-     * 加载模板文件
-     *
-     * @param $attr
-     * @param $content
-     *
-     * @return string
-     */
-    public function _include($attr, $content)
+    //加载模板文件
+    public function _include($attr, $content, &$hd)
     {
-        if ( ! isset($attr['file'])) {
-            return;
-        }
-        $const = print_const(false, true);
-        foreach ($const as $k => $v) {
+        //替换常量
+        $const = get_defined_constants(true);
+        foreach ($const['user'] as $k => $v) {
             $attr['file'] = str_replace($k, $v, $attr['file']);
         }
+        //删除域名
         $file = str_replace(__ROOT__ . '/', '', trim($attr['file']));
         $view = new ViewHd();
         $view->fetch($file);
 
-        return $view->getCompileContent();
+        return file_get_contents($view->compileFile);
     }
 
+    //if标签
     public function _if($attr, $content, &$hd)
     {
         $php
@@ -209,7 +156,8 @@ php;
         return $php;
     }
 
-    public function _elseif($attr, $content, $res)
+    //elseif标签
+    public function _elseif($attr, $content, &$hd)
     {
         $php = "<?php }else if({$attr['value']}){ ?>";
         $php .= $content;
@@ -217,55 +165,29 @@ php;
         return $php;
     }
 
-    public function _else($attr, $content, $res)
+    //else标签
+    public function _else($attr, $content, &$hd)
     {
         return "<?php }else{ ?>";
     }
 
-    public function _while($attr, $content, $res)
-    {
-        if (empty($attr['value'])) {
-            return;
-        }
-        $value = $attr['value'];
-        $php   = ''; //组合成PHP
-        $php .= ' <?php ' . " while($value){ ?>";
-        $php .= $content;
-        $php .= ' <?php }?>';
-
-        return $php;
-    }
-
+    //empty标签
     public function _empty($attr, $content, $res)
     {
-        if (empty($attr['value'])) {
-            return;
-        }
-        $value = $attr['value'];
-        $php
-               =
-            '<?php $_emptyVar = isset(' . $value . ')?' . $value . ':null ?>';
-        $php .= '<?php ' . ' if (empty($_emptyVar)){ ?>';
+        $php = "<?php if (empty({$attr['value']})){ ?>";
         $php .= $content;
         $php .= '<?php } ?>';
 
         return $php;
     }
 
+    //noempty标签
     public function _noempty($attr, $content)
     {
         return '<?php }else{ ?>';
     }
 
-    /**
-     * 将URL常量定义为JS变量
-     *
-     * @param array  $attr    属性
-     * @param string $content 内容
-     * @param Object $hd      视图对象
-     *
-     * @return string
-     */
+    //将URL常量定义为JS变量
     public function _jsconst($attr, $content, &$hd)
     {
         //所有常量

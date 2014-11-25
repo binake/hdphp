@@ -208,25 +208,4 @@ final class String
         $preg = "/[,.!;:<>\?'\"@#$%^&*\(\)\-_\+=\|\\\{\}\[\]\/`]/i";
         return preg_replace($preg, "", $string);
     }
-
-    /**
-     * 拆分字符串
-     * @param $string 要拆分的字符
-     * @param string $source_charset 输入字符的字符编码
-     * @param string $target_charset 输出字符的字符编码
-     * @param bool $load_all
-     * @param string $source
-     * @return array 拆分后的字符以数组形式返回，键名为字符，键值为字符数量
-     */
-    static public function splitWord($string, $source_charset = 'utf-8', $target_charset = 'utf-8', $load_all = TRUE, $source = '')
-    {
-        require_cache(HDPHP_EXTEND_PATH . '/Org/SplitWord/SplitWord.class.php');
-        $words = SplitWord::splitWord($string, $source_charset = 'utf-8', $target_charset = 'utf-8', $load_all = TRUE, $source = '');
-        //按词频从大向小排序
-        if (is_array($words))
-            array_multisort($words, SORT_DESC);
-        return $words;
-
-    }
-
 }

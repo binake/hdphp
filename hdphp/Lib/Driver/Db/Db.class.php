@@ -277,6 +277,7 @@ abstract class Db implements DbInterface
          * 更新数据不能为空
          */
         if (!$value) {
+            $this->optInit();
             return false;
         }
         $sql = $type . " INTO " . $this->opt['table'] . "(" . implode(',', $value['fields']) . ")" .
@@ -322,6 +323,7 @@ abstract class Db implements DbInterface
          * 没有更新数据
          */
         if (empty($data)) {
+            $this->optInit();
             return false;
         }
         $sql = "UPDATE " . $this->opt['table'] . " SET ";
@@ -341,6 +343,7 @@ abstract class Db implements DbInterface
     {
         $this->where($where);
         if (empty($this->opt['where'])) {
+            $this->optInit();
             return false;
         }
         $sql = "DELETE FROM " . $this->opt['table'] . $this->opt['where'] . $this->opt['limit'];
@@ -413,7 +416,7 @@ abstract class Db implements DbInterface
                         $set .= isset($opt['_logic']) ? " {$opt['_logic']} " : ' AND ';
                     }
                     $where .= $set;
-                } else if ($this->isField($key)) { //参数为数组
+                } else if (is_string($key)) { //参数为数组
                     if (!is_array($set)) {
                         $logic = isset($opt['_logic']) ? " {$opt['_logic']} " : ' AND '; //连接方式
                         $where .= " $key " . "='$set' " . $logic;

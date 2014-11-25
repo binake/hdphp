@@ -87,10 +87,6 @@ class ViewCompile
          */
         $this->parseUrlConst();
         /**
-         * 解析POST令牌Token
-         */
-        $this->parseTokey();
-        /**
          * 将不解析内容还原
          */
         $this->replaceNoParseContent();
@@ -98,7 +94,7 @@ class ViewCompile
          * 编译内容
          */
         $this->content
-            ="<?php if(!defined('HDPHP_PATH'))exit;C('SHOW_NOTICE',FALSE);?>\n"
+            = "<?php if(!defined('HDPHP_PATH'))exit;C('SHOW_NOTICE',FALSE);?>\n"
             . $this->content;
         /**
          * 创建编译目录与安全文件
@@ -183,7 +179,7 @@ class ViewCompile
                      * 合法标签类必须包含Tag属性
                      */
                     if (class_exists($class, false)
-                        && property_exists($class, 'tag')
+                        && property_exists($class, 'Tag')
                         && get_parent_class($class) == 'Tag'
                     ) {
                         $tagClass[] = $class;
@@ -202,7 +198,7 @@ class ViewCompile
             /**
              * 标签库中的标签方法
              */
-            foreach ($obj->tag as $tag => $option) {
+            foreach ($obj->Tag as $tag => $option) {
                 /**
                  * 合法标签满足以下条件
                  * b) 定义了block与level值
@@ -295,22 +291,6 @@ class ViewCompile
                 $this->content = str_replace($d[0], $replace, $this->content);
             }
         }
-    }
-
-
-    /**
-     * 解析Token
-     */
-    private function parseTokey()
-    {
-        if ( ! C("TOKEN_ON")) {
-            return;
-        }
-        Token::create(); //生成token
-        $preg = '/<\/form>/iUs';
-        $content
-                       = '<input type="hidden" name="<?php echo C("TOKEN_NAME");?>" value="<?php echo $_SESSION[C("TOKEN_NAME")]?>"/></form>';
-        $this->content = preg_replace($preg, $content, $this->content);
     }
 
     /**

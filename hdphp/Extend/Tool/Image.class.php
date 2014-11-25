@@ -212,7 +212,7 @@ class Image
      * 水印处理
      * @param $img 操作的图像
      * @param string $outImg 另存的图像 不设置时操作原图
-     * @param string $pos v
+     * @param string $pos 水印位置
      * @param string $waterImg 水印图片
      * @param string $pct 透明度
      * @param string $text 文字水印内容

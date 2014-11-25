@@ -21,7 +21,8 @@ final class Backup
     private static $config;
     //备份目录
     private static $dir;
-
+    //错误信息
+    public static $error;
     //构造函数
     public function __construct()
     {
@@ -39,7 +40,8 @@ final class Backup
         //检测目录是否存在
         if (!is_dir($dir)) {
             F('backupDir', null);
-            halt('备份目录不存在');
+            self::$error='备份目录不存在';
+            return false;
         }
         self::$config = require($dir . '/config.php');
         //文件id
@@ -83,13 +85,9 @@ final class Backup
             self::$config = require(self::$dir . '/config.php');
             return self::backup_data();
         } else {
-            //首次执行时创建配置文件
-            self::$dir = isset($config['dir']) ? $config['dir'] : C('DB_BACKUP');
-            //缓存备份目录
-            F('backupDir', self::$dir);
             //创建备份配置文件与目录
             if (!self::init($config)) {
-                halt('备份初始化失败');
+                return false;
             }
             //是否备份表结构
             $structure = isset($config['structure']) ? $config['structure'] : TRUE;
@@ -190,11 +188,32 @@ final class Backup
     //初始化
     static private function init($config)
     {
-        //创建备份目录
-        is_dir(self::$dir) or Dir::create(self::$dir);
-        //检测目录
-        if (!is_dir(self::$dir)) {
+        if(!isset($config['dir'])){
+            self::$error='请设置备份目录';
             return false;
+        }else{
+            self::$dir = $config['dir'];
+            //缓存备份目录
+            F('backupDir', self::$dir);
+        }
+        //检测目录
+        if (!Dir::create(self::$dir)) {
+            self::$error='备份目录创建失败';
+            return false;
+        }
+        //数据库
+        if(!isset($config['database'])){
+            $config['database']=C('DB_DATABASE');
+        }
+        //分卷大小,单位kb
+        if (!isset($config['size'])) {
+            $config['size'] = 200;
+        }
+        //备份时间间隔
+        if(isset($config['step_time'])){
+            $config['step_time']*=1000;
+        }else{
+            $config['step_time']=200;
         }
         //所有表信息
         $tableInfo = M()->getAllTableInfo();
@@ -209,14 +228,8 @@ final class Backup
                 $config['table'][] = $t;
             }
         }
-        //分卷大小,单位kb
-        if (!isset($config['size'])) {
-            $config['size'] = 200;
-        }
         //备份成功后的跳转url
         $config['url'] = isset($config['url']) ? $config['url'] : '';
-        //数据库
-        $config['database'] = isset($config['database']) ? $config['database'] : C('DB_DATABASE');
         foreach ($config['table'] as $table) {
             self::$config[$table] = array();
             //共有行数
@@ -227,7 +240,7 @@ final class Backup
             self::$config[$table]['current_row'] = 0;
             self::$config[$table]['size'] = $config['size'] * 1000;
             self::$config[$table]['url'] = $config['url'];
-            self::$config[$table]['step_time'] = isset($config['step_time']) ? $config['step_time'] * 1000 : 200;
+            self::$config[$table]['step_time'] = $config['step_time'];
             self::$config[$table]['database'] = $config['database'];
         }
         return self::update_config_file();
