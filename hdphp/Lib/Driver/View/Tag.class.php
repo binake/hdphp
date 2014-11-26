@@ -161,7 +161,7 @@ abstract class Tag
          * 替换GT LT等
          */
         foreach ($this->condition as $k => $v) {
-            $attrValue = preg_replace("/$k/i", $v, $attrValue);
+            $attrValue = preg_replace("/\s+$k\s+/i", $v, $attrValue);
         }
         /**
          * 替换常量值

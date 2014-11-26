@@ -63,7 +63,7 @@ class ViewTag extends Tag
         //变量
         $from = $attr['from'];
         //name名
-        $name = $attr['name'];
+        $name = substr($attr['name'],1);
         //默认值
         $empty = isset($attr['empty']) ? $attr['empty'] : '';
         //显示条数
