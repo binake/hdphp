@@ -31,8 +31,8 @@ final class Boot
         } else {
             define('MAGIC_QUOTES_GPC', false);
         }
-        $root = str_replace('\\','/',dirname($_SERVER['SCRIPT_FILENAME']));
-        define('ROOT_PATH',             $root.'/'); //根目录
+        $root = str_replace($_SERVER['DOCUMENT_ROOT'],'',$_SERVER['SCRIPT_FILENAME']);
+        define('ROOT_PATH',             str_replace('\\','/',dirname($root).'/')); //根目录
         define("DS",                    DIRECTORY_SEPARATOR); //目录分隔符
         define('IS_CGI',                substr(PHP_SAPI, 0, 3) == 'cgi' ? TRUE : FALSE);
         define('IS_WIN',                strstr(PHP_OS, 'WIN') ? TRUE : FALSE);
