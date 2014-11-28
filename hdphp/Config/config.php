@@ -32,7 +32,7 @@ return array(
     'TPL_TAG_RIGHT'                 => '>',         //右标签
     'TPL_CACHE_TIME'                => -1,          //模板缓存时间 -1为不缓存 0为永久缓存
     /********************************储存********************************/
-    'STORAGE_DRIVER'		=>'File',//储存驱动 支持File与Memcache储存
+    'STORAGE_DRIVER'		        =>'File',//储存驱动 支持File与Memcache储存
     /********************************表单TOKEN令牌********************************/
     'TOKEN_ON'                      => FALSE,       //开启令牌
     'TOKEN_NAME'                    => '__TOKEN__', //令牌的表单name
@@ -113,8 +113,6 @@ return array(
     'PAGE_STYLE'                    => 2,           //页码风格
     'PAGE_DESC'                     => array('pre' => '上一页', 'next' => '下一页',//分页文字设置
                                             'first' => '首页', 'end' => '尾页', 'unit' => '条'),
-    /********************************购物车参数********************************/
-    'CART_NAME'                     => 'cart',      //储存在$_SESSION购物车名称
     /********************************RBAC权限控制********************************/
     'RBAC_TYPE'                     => 1,           //1时时认证｜2登录认证
     'RBAC_SUPER_ADMIN'              => 'super_admin', //超级管理员SESSION名
@@ -127,15 +125,6 @@ return array(
     'RBAC_NODE_TABLE'               => 'node',      //节点表
     'RBAC_ROLE_USER_TABLE'          => 'user_role', //角色与用户关联表
     'ACCESS_TABLE'                  => 'access',    //权限分配表
-    /********************************邮箱配置********************************/
-    'EMAIL_USERNAME'                => '',          //邮箱用户名
-    'EMAIL_PASSWORD'                => '',          //邮箱密码
-    'EMAIL_HOST'                    => '',          //smtp地址如smtp.gmail.com或smtp.126.com建议使用126服务器
-    'EMAIL_PORT'                    => 25,          //smtp端口 126为25，gmail为465
-    'EMAIL_SSL'                     => 0,           //是否采用SSL,126为false,google必须为true
-    'EMAIL_CHARSET'                 => 'utf8',          //字符集设置,中文乱码就是这个没有设置好 如utf8
-    'EMAIL_FORMMAIL'                => '',          //发送人发件箱显示的邮箱址址
-    'EMAIL_FROMNAME'                => '后盾网',      //发送人发件箱显示的用户名
     /********************************缓存********************************/
     'CACHE_TYPE'                    => 'file',      //类型:file memcache redis
     'CACHE_TIME'                    => 0,           //全局默认缓存时间 0为永久缓存 -1 不缓存
