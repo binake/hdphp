@@ -1,4 +1,5 @@
 <?php
+error_reporting(0);
 // .-----------------------------------------------------------------------------------
 // |  Software: [HDPHP framework]
 // |   Version: 2013.01
@@ -161,13 +162,12 @@ final class HDPHP
             case E_PARSE:
             case E_CORE_ERROR:
             case E_COMPILE_ERROR:
+            case E_DEPRECATED://忽略不建议使用的错误提示
             case E_USER_ERROR:
                 ob_end_clean();
                 $msg = $error. $file . " 第 $line 行.";
                 if(C('LOG_RECORD')) Log::write("[$errno] " . $msg, Log::ERROR);
                 function_exists('halt') ? halt($msg) : exit('ERROR:' . $msg);
-                break;
-            case E_DEPRECATED://忽略不建议使用的错误提示
                 break;
             default:
                 $errorStr = "[$errno] $error " . $file . " 第 $line 行.";

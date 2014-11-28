@@ -94,8 +94,7 @@ final class ViewHd
             $this->vars['hd']['server']   = &$_SERVER;
             $this->vars['hd']['config']   = C();
             $this->vars['hd']['language'] = L();
-            $const                        = get_defined_constants(true);
-            $this->vars['hd']['const']    = $const['user'];
+            $this->vars['hd']['const']    = get_defined_constants();
             /**
              * 获得模板文件
              */

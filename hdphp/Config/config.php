@@ -127,13 +127,6 @@ return array(
     'RBAC_NODE_TABLE'               => 'node',      //节点表
     'RBAC_ROLE_USER_TABLE'          => 'user_role', //角色与用户关联表
     'ACCESS_TABLE'                  => 'access',    //权限分配表
-    /********************************文本编辑器********************************/
-    'EDITOR_TYPE'                   => 2,           //复文本编辑器  1 baidu  2 kindeditor
-    'EDITOR_STYLE'                  => 1,           //1 完全模式  2 精简模式
-    'EDITOR_WIDTH'                  => '100%',      //编辑器高度
-    'EDITOR_HEIGHT'                 => 300,         //编辑器高度
-    'EDITOR_SAVE_PATH'              => 'upload/editor/', //文件储存目录
-    'EDITOR_IMAGE_WATER'            => false,        //图片水印控制
     /********************************邮箱配置********************************/
     'EMAIL_USERNAME'                => '',          //邮箱用户名
     'EMAIL_PASSWORD'                => '',          //邮箱密码
