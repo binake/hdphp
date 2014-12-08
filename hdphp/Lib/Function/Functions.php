@@ -212,9 +212,6 @@ function import($class = null, $base = null, $ext = ".class.php")
             $base = MODULE_PATH;
         }
         else {
-            /**
-             * 默认加载Lib目录下类
-             */
             $base = dirname($class) . '/';
             $class = basename($class);
         }
@@ -361,17 +358,16 @@ function session($name = '', $value = '')
             session_cache_limiter($name['cache_limiter']);
         if (isset($name['cache_expire']))
             session_cache_expire($name['cache_expire']);
-        if (isset($name['type']))
-            C('SESSION_TYPE', $name['type']);
-        if (C('SESSION_TYPE')) {
-            $class = 'Session' . ucwords(strtolower(C('SESSION_TYPE')));
+        if (isset($name['type'])) {
+            $class = 'Session' . ucwords($name['type']);
             require_cache(HDPHP_DRIVER_PATH . '/Session/' . $class . '.class.php');
             $hander = new $class();
             $hander->run();
         }
         //自动开启SESSION
-        if (C("SESSION_AUTO_START"))
+        if (C("SESSION_AUTO_START")){
             session_start();
+        }
     }
     elseif ($name === '') {
         return $_SESSION;

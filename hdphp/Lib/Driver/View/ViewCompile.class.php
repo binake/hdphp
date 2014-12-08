@@ -174,7 +174,7 @@ class ViewCompile
                     || import($file, APP_TAG_PATH)
                 ) {
                     //类名
-                    $file=str_replace('.','/',$file);echo $file;
+                    $file=str_replace('.','/',$file);
                     $class = basename($file);
                     /**
                      * 合法标签类必须包含Tag属性
@@ -288,8 +288,10 @@ class ViewCompile
                         $var = $name . '(' . $var . ')';
                     }
                 }
-                $replace       = '<?php echo ' . $var . ';?>';
-                $this->content = str_replace($d[0], $replace, $this->content);
+                if(!empty($var)){
+                    $replace       = '<?php echo ' . $var . ';?>';
+                    $this->content = str_replace($d[0], $replace, $this->content);
+                }
             }
         }
     }

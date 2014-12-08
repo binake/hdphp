@@ -3,7 +3,6 @@ return array(
     /********************************基本参数********************************/
     'DEFAULT_TIME_ZONE'             => 'PRC',       //时区
     'LANGUAGE'                      => '',          //语言包
-    'AUTH_KEY'                      => 'HouDunWang',//加密Key(如果使用建议定期更换AUTH_KEY)
     'CHECK_FILE_CASE'               => TRUE,        //windows区分大小写
     'AUTO_LOAD_FILE'                => array(),     //自动加载应用Lib目录或应用组Common/Lib目录下的文件
     'FILTER_FUNCTION'               => array('htmlspecialchars','strip_tags'), //过滤函数会在Q(),date_format()等函数中使用
@@ -33,9 +32,6 @@ return array(
     'TPL_CACHE_TIME'                => -1,          //模板缓存时间 -1为不缓存 0为永久缓存
     /********************************储存********************************/
     'STORAGE_DRIVER'		        =>'File',//储存驱动 支持File与Memcache储存
-    /********************************表单TOKEN令牌********************************/
-    'TOKEN_ON'                      => FALSE,       //开启令牌
-    'TOKEN_NAME'                    => '__TOKEN__', //令牌的表单name
     /********************************系统调试********************************/
     '404_URL'                       => '',          //404跳转url
     'ERROR_URL'                     => '',          //错误跳转URL
@@ -49,7 +45,7 @@ return array(
     /********************************SESSION********************************/
     'SESSION_AUTO_START'            => TRUE,        //自动开启SESSION
     'SESSION_TYPE'                  => '',          //引擎:mysql,memcache,redis
-    'SESSION_OPTIONS'               =>array(),      //Session选项
+    'SESSION_OPTIONS'               => array(),     //Session选项
     /********************************COOKIE********************************/
     'COOKIE_EXPIRE'                 => 0,           // Coodie有效期
     'COOKIE_DOMAIN'                 => '',          // Cookie有效域名
@@ -72,8 +68,6 @@ return array(
     'DEFAULT_ACTION'                => 'index',     //默认方法
     'CONTROLLER_FIX'                => 'Controller',//控制器文件后缀
     'MODEL_FIX'                     => 'Model',     //模型文件名后缀
-    /********************************URL路由********************************/
-    'ROUTE' => array(),                             //路由规则
     /********************************文件上传********************************/
     'UPLOAD_THUMB_ON'               => FALSE,       //上传图片缩略图处理
     'UPLOAD_ALLOW_TYPE'             => array('jpg','jpeg','gif','png','zip','rar','doc','txt'),//允许上传类型
@@ -143,9 +137,12 @@ return array(
         'Db'        => 0,               //数据库
         'pconnect'  => 0,               //持久连接
     ),
+    /********************************URL路由********************************/
+    'ROUTE'                         => array(),
     /********************************钓子********************************/
     'HOOK'                          => array(),
     /********************************别名导入********************************/
-    'ALIAS'                         =>array()
+    'ALIAS'                         => array()
+
 );
 ?>

@@ -1,5 +1,4 @@
 <?php
-error_reporting(0);
 // .-----------------------------------------------------------------------------------
 // |  Software: [HDPHP framework]
 // |   Version: 2013.01
@@ -18,7 +17,7 @@ final class HDPHP
     static public function init()
     {
         //加载应用配置
-        is_file(APP_CONFIG_PATH . 'config.php')                 and C(require(APP_CONFIG_PATH . 'config.php'));;
+        is_file(APP_CONFIG_PATH . 'config.php')                 and C(require(APP_CONFIG_PATH . 'config.php'));
         is_file(APP_LANGUAGE_PATH . C('LANGUAGE') . '.php')     and L(require APP_LANGUAGE_PATH . C('LANGUAGE') . '.php');
         //解析路由
         Route::parseUrl();
@@ -71,12 +70,12 @@ final class HDPHP
         set_error_handler(array(__CLASS__,                      'error'), E_ALL);
         set_exception_handler(array(__CLASS__,                  'exception'));
         register_shutdown_function(array(__CLASS__,             'fatalError'));
-        HDPHP::_appAutoLoad();
+        HDPHP::autoLoadFile();
     }
     /**
      * 自动加载文件
      */
-    static private function _appAutoLoad()
+    static private function autoLoadFile()
     {
         //自动加载文件列表
         $files = C('AUTO_LOAD_FILE');

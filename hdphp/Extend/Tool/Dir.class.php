@@ -58,7 +58,9 @@ final class Dir
             if (is_dir($v) || !$exts || preg_match("/\.($exts)/i", $v)) {
                 $list [$id] ['type'] = filetype($v);
                 $list [$id] ['filename'] = basename($v);
-                $list [$id] ['path'] = str_replace("\\", "/", realpath($v)) . (is_dir($v) ? '/' : '');
+                $path = str_replace("\\", "/", realpath($v)) . (is_dir($v) ? '/' : '');
+                $list [$id] ['path']=$path;
+                $list [$id] ['spath']=ltrim(str_replace(dirname($_SERVER['SCRIPT_FILENAME']),'',$path),'/');
                 $list [$id] ['filemtime'] = filemtime($v);
                 $list [$id] ['fileatime'] = fileatime($v);
                 $list [$id] ['size'] = is_file($v) ? filesize($v) : self::get_dir_size($v);

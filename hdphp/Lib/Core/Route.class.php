@@ -367,6 +367,7 @@ final class Route
         }
         return rtrim($url, "&" . $dli);
     }
+
     /**
      * 根据配置文件的URL参数重新生成URL地址
      * @param String $path 访问url
@@ -379,7 +380,9 @@ final class Route
      */
     static public function getUrl($path, $args = array())
     {
-        if(preg_match('/^https?:\/\//',$path))return $path;
+        if (preg_match('/^https?:\/\//', $path)) {
+            return $path;
+        }
         /**
          * 参数$args为字符串时转数组
          */
@@ -412,6 +415,13 @@ final class Route
         }
         $action = array();
         $info = explode('/', $path);
+        if (count($info) > 3) {
+            $param = array_slice($info, 3);
+            $info = array_slice($info, 0, 3);
+            for ($i = 0; $i < count($param); $i += 2) {
+                $args[$param[$i]] = $param[$i + 1];
+            }
+        }
         switch (count($info)) {
             case 3:
                 $action[C("VAR_MODULE")] = ucfirst($info[0]);
@@ -428,6 +438,8 @@ final class Route
                 $action[C("VAR_CONTROLLER")] = ucfirst(CONTROLLER);
                 $action[C("VAR_ACTION")] = $info[0];
                 break;
+            default:
+
         }
         switch (C("URL_TYPE")) {
             case 1:
@@ -435,7 +447,7 @@ final class Route
                 $url = $action[C("VAR_MODULE")] . '/' . $action[C("VAR_CONTROLLER")] . '/' . $action[C("VAR_ACTION")];
                 break;
             case 2:
-                $url =  C("VAR_MODULE") . '=' . $action[C("VAR_MODULE")] . '&' . C("VAR_CONTROLLER") . '=' . $action[C("VAR_CONTROLLER")] . '&' .
+                $url = C("VAR_MODULE") . '=' . $action[C("VAR_MODULE")] . '&' . C("VAR_CONTROLLER") . '=' . $action[C("VAR_CONTROLLER")] . '&' .
                     C("VAR_ACTION") . '=' . $action[C("VAR_ACTION")];
                 break;
         }
@@ -457,6 +469,6 @@ final class Route
                     break;
             }
         }
-        return $root.Route::toUrl($url).C('HTML_SUFFIX');
+        return $root . Route::toUrl($url) . C('HTML_SUFFIX');
     }
 }

@@ -42,6 +42,10 @@ class RelationModel extends Model
     {
         $result = call_user_func(array($this->db, __FUNCTION__), $data);
         /**
+         * 重置模型
+         */
+        $this->__reset();
+        /**
          * 主表查询没有结果或失败
          */
         if (!$result) {
@@ -117,13 +121,13 @@ class RelationModel extends Model
         $this->data($data);
         $InsertData = $this->data;
         /**
-         * 重置模型
-         */
-        $this->__reset();
-        /**
          * 插入主表数据
          */
         $pid = call_user_func(array($this->db, __FUNCTION__), $InsertData);
+        /**
+         * 重置模型
+         */
+        $this->__reset();
         //插入失败或者没有定义关联join属性
         if (!$pid) {
             return $pid;
@@ -203,13 +207,13 @@ class RelationModel extends Model
         $this->data($data);
         $UpdateData = $this->data;
         /**
-         * 重置模型
-         */
-        $this->__reset();
-        /**
          * 更新主表数据
          */
         $status = call_user_func(array($this->db, __FUNCTION__), $UpdateData);
+        /**
+         * 重置模型
+         */
+        $this->__reset();
         /**
          * 主表更新
          */
@@ -259,16 +263,26 @@ class RelationModel extends Model
     public function delete($data = array())
     {
         /**
-         * 主表删除的数据
+         * 条件
          */
-        $ParentData = M($this->table)->where($data)->select();
-        if (!$ParentData) {
-            return true;
-        }
+        $this->where($data);
+        $where = preg_replace('/^\s+where/i', '', $this->db->opt['where']);
+        //主表数据
+        $ParentData = $this->where($where)->select();
         /**
          * 删除主表数据
          */
-        $status = call_user_func(array($this->db, __FUNCTION__), $data);
+        $status = call_user_func(array($this->db, __FUNCTION__), $where);
+        /**
+         * 重置模型
+         */
+        $this->__reset();
+        //主表无数据
+        if (!$this->db->getAffectedRows()) {
+            return true;
+        }
+
+
         /**
          * 删除主表失败
          */

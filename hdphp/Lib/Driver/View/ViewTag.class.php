@@ -88,7 +88,7 @@ class ViewTag extends Tag
             \$listId = 0;
             \$listShowNum=0;
             \$listNextId=$start;
-            foreach ($from as \$n => \$$name) {
+            foreach ($from as \$$name) {
                 //开始值
                 if (\$listId<$start) {
                     \$listId++;

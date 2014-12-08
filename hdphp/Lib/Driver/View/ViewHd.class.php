@@ -48,18 +48,19 @@ final class ViewHd
     /**
      * 模板显示
      *
-     * @param string $tplFile     模板文件
-     * @param string $cachePath   缓存目录
-     * @param int    $cacheTime   缓存时间
+     * @param string $tplFile 模板文件
+     * @param string $cachePath 缓存目录
+     * @param int $cacheTime 缓存时间
      * @param string $contentType 文件类型
-     * @param bool   $show        是否显示
+     * @param bool $show 是否显示
      *
      * @return bool|string
      */
     public function display(
         $tplFile = null, $cacheTime = -1, $cachePath = null,
         $contentType = "text/html", $show = true
-    ) {
+    )
+    {
         //缓存文件名
         $cacheName = md5($_SERVER['REQUEST_URI']);
         //缓存时间
@@ -81,25 +82,25 @@ final class ViewHd
         /**
          * 缓存失效
          */
-        if ( ! $content) {
+        if (!$content) {
             /**
              * 全局变量定义
              * 模板使用{$hd.get.xx}方式调用
              */
-            $this->vars['hd']['get']      = &$_GET;
-            $this->vars['hd']['post']     = &$_POST;
-            $this->vars['hd']['request']  = &$_REQUEST;
-            $this->vars['hd']['cookie']   = &$_COOKIE;
-            $this->vars['hd']['session']  = &$_SESSION;
-            $this->vars['hd']['server']   = &$_SERVER;
-            $this->vars['hd']['config']   = C();
+            $this->vars['hd']['get'] = &$_GET;
+            $this->vars['hd']['post'] = &$_POST;
+            $this->vars['hd']['request'] = &$_REQUEST;
+            $this->vars['hd']['cookie'] = &$_COOKIE;
+            $this->vars['hd']['session'] = &$_SESSION;
+            $this->vars['hd']['server'] = &$_SERVER;
+            $this->vars['hd']['config'] = C();
             $this->vars['hd']['language'] = L();
-            $this->vars['hd']['const']    = get_defined_constants();
+            $this->vars['hd']['const'] = get_defined_constants();
             /**
              * 获得模板文件
              */
             $this->tplFile = $this->getTemplateFile($tplFile);
-            if ( ! $this->tplFile) {
+            if (!$this->tplFile) {
                 return;
             }
             //编译文件
@@ -109,7 +110,7 @@ final class ViewHd
             //记录模板编译文件
             if (DEBUG) {
                 Debug::$tpl[] = array(basename($this->tplFile),
-                                      $this->compileFile);
+                    $this->compileFile);
             }
             //编译文件失效（不存在或过期）
             if ($this->compileInvalid($tplFile)) {
@@ -117,7 +118,7 @@ final class ViewHd
                 $this->compile();
             }
             //加载全局变量
-            if ( ! empty($this->vars)) {
+            if (!empty($this->vars)) {
                 extract($this->vars);
             }
             ob_start();
@@ -128,14 +129,14 @@ final class ViewHd
                 //写入缓存
                 S(
                     $cacheName, $content, $cacheTime,
-                    array("dir"    => $cachePath, 'zip' => false,
-                          "Driver" => "File")
+                    array("dir" => $cachePath, 'zip' => false,
+                        "Driver" => "File")
                 );
             }
         }
         if ($show) {
             $charset = C('TPL_CHARSET') ? C('TPL_CHARSET') : "UTF-8";
-            if ( ! headers_sent()) {
+            if (!headers_sent()) {
                 header("Content-type:" . $contentType . ';charset=' . $charset);
             }
             echo $content;
@@ -147,9 +148,9 @@ final class ViewHd
     /**
      * 获得视图内容
      *
-     * @param null   $tplFile     模板文件
-     * @param null   $cacheTime   缓存时间
-     * @param null   $cachePath   缓存路径
+     * @param null $tplFile 模板文件
+     * @param null $cacheTime 缓存时间
+     * @param null $cachePath 缓存路径
      * @param string $contentType 文档类型
      *
      * @return bool|string
@@ -157,7 +158,8 @@ final class ViewHd
     public function fetch(
         $tplFile = null, $cacheTime = null, $cachePath = null,
         $contentType = "text/html"
-    ) {
+    )
+    {
         return $this->display(
             $tplFile, $cacheTime, $cachePath, $contentType, false
         );
@@ -195,7 +197,7 @@ final class ViewHd
              * 没有传参时使用 动作为为文件名
              */
             $file = CONTROLLER_VIEW_PATH . ACTION;
-        } else if ( ! strstr($file, '/')) {
+        } else if (!strstr($file, '/')) {
             /**
              * 没有路径时使用控制器视图目录
              */
@@ -204,7 +206,9 @@ final class ViewHd
         /**
          * 添加后缀
          */
-        $file .= C('TPL_FIX');
+        if (!preg_match('/\.[a-z]/i', $file)) {
+            $file .= C('TPL_FIX');
+        }
         /**
          * 模板文件检测
          */
@@ -223,10 +227,10 @@ final class ViewHd
      */
     private function compileInvalid()
     {
-        $tplFile     = $this->tplFile;
+        $tplFile = $this->tplFile;
         $compileFile = $this->compileFile;
 
-        return DEBUG || ! file_exists($compileFile)
+        return DEBUG || !file_exists($compileFile)
         || (filemtime($tplFile) > filemtime($compileFile));
     }
 
@@ -238,7 +242,7 @@ final class ViewHd
         /**
          * 编译是否失效
          */
-        if ( ! $this->compileInvalid()) {
+        if (!$this->compileInvalid()) {
             return;
         }
         $compileObj = new ViewCompile();
@@ -248,8 +252,8 @@ final class ViewHd
     /**
      * 向模板中传入变量
      *
-     * @param string|array $var   变量名
-     * @param mixed        $value 变量值
+     * @param string|array $var 变量名
+     * @param mixed $value 变量值
      *
      * @return bool
      */

@@ -35,17 +35,6 @@ final class App
         Hook::listen("APP_END");
     }
 
-    //加载应用与模块end事件类
-    static private function loadEventClass()
-    {
-        $content_end_event = C("app_event.control_end");
-        if ($content_end_event) {
-            foreach ($content_end_event as $c) {
-                HDPHP::autoload($c . 'Event');
-            }
-        }
-    }
-
     /**
      * 运行应用
      * @access private
