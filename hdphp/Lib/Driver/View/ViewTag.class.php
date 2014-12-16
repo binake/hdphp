@@ -48,13 +48,13 @@ class ViewTag extends Tag
     //css标签
     public function _css($attr, $content, &$hd)
     {
-        return "<link type='text/css' rel='stylesheet' href='{$attr['file']}'/>";
+        return "<link type=\"text/css\" rel=\"stylesheet\" href=\"{$attr['file']}\"/>";
     }
 
     //js标签
     public function _js($attr, $content, &$hd)
     {
-        return "<script type='text/javascript' src='{$attr['file']}'></script>";
+        return "<script type=\"text/javascript\" src=\"{$attr['file']}\"></script>";
     }
 
     //list标签

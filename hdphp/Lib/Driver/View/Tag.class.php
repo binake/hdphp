@@ -125,7 +125,7 @@ abstract class Tag
      */
     protected function parseTagAttr($attrStr)
     {
-        $pregAttr = '#' . '([a-z]+)=(["\'])(.*)\2#iU'; //属性正则
+        $pregAttr = '#' . '([a-z_]+)=(["\'])(.*)\2#iU'; //属性正则
         /**
          * $info说明
          * 0 完整内容

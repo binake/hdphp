@@ -346,6 +346,10 @@ class Page
                 {$this->desc['unit']}</span>" . $this->picList() . $this->select();
             case 5:
                 return $this->first() . $this->pre() . $this->strList() . $this->next() . $this->end();
+            case 6:
+                return $this->strList();
+            case 7:
+                return $this->pre() . $this->next();
         }
     }
 
