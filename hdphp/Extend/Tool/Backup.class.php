@@ -23,6 +23,7 @@ final class Backup
     private static $dir;
     //错误信息
     public static $error;
+
     //构造函数
     public function __construct()
     {
@@ -40,7 +41,7 @@ final class Backup
         //检测目录是否存在
         if (!is_dir($dir)) {
             F('backupDir', null);
-            self::$error='备份目录不存在';
+            self::$error = '备份目录不存在';
             return false;
         }
         self::$config = require($dir . '/config.php');
@@ -55,18 +56,36 @@ final class Backup
             if (is_file($dir . '/structure.php')) {
                 require $dir . '/structure.php';
             }
-            $url = U(ACTION, array('bid' => 1, 'status' => 'run'));
+            $url = self::getUrl(array('bid' => 1, 'status' => 'run'));
             return array('status' => 'run', 'message' => '还原数据初始化...', 'url' => $url);
         }
         foreach (glob($dir . '/*') as $d) {
             if (preg_match("@_bk_{$fid}.php$@i", $d)) {
                 require $d;
                 $_GET['bid'] += 1;
-                $url = U(ACTION, array('bid' => $_GET['bid'], 'status' => 'run'));
+                $url = self::getUrl(array('bid' => $_GET['bid'], 'status' => 'run'));
                 return array('status' => 'run', 'message' => "分卷{$fid}还原完毕!", 'url' => $url);
             }
         }
         return array('status' => 'success', 'message' => "所有分卷还原完毕...");
+    }
+
+    /**
+     * 获取跳转url
+     * @param $param
+     * @return string
+     */
+    static private function getUrl($param)
+    {
+        $url = __ROOT__ . '/index.php?';
+        foreach ($_GET as $n => $v) {
+            if ($n == 'bid' || $n == 'status') {
+                continue;
+            } else {
+                $url .= $n . '=' . $v . '&';
+            }
+        }
+        return $url . http_build_query($param);
     }
 
     //备份数据表
@@ -78,8 +97,8 @@ final class Backup
         $backupDir = F('backupDir');
         //2+备份时
         if (Q("get.status")) {
-            if(!is_dir($backupDir) && is_writable($backupDir)){
-                halt('备份目录'.$backupDir.'不存在或不可写');
+            if (!is_dir($backupDir) && is_writable($backupDir)) {
+                halt('备份目录' . $backupDir . '不存在或不可写');
             }
             self::$dir = $backupDir;
             self::$config = require(self::$dir . '/config.php');
@@ -95,7 +114,7 @@ final class Backup
                 self::backup_structure();
             }
             //记录备份目录
-            $url = U(ACTION, array('status' => 'run'));
+            $url = self::getUrl(array('status' => 'run'));
             return array('status' => 'run', 'message' => '正在进行备份初始化...', 'url' => $url);
         }
     }
@@ -120,7 +139,7 @@ final class Backup
     {
         foreach (self::$config as $table => $config) {
             //已经备份过的表忽略
-            if ($config['success']){
+            if ($config['success']) {
                 continue;
             }
             //当前备份行
@@ -148,8 +167,9 @@ final class Backup
                         }
                         //表名
                         $table_name = "\".\$db_prefix.\"" . str_ireplace(C("DB_PREFIX"), "", $table);
+                        $dataValue = str_replace('$', '\$', implode(",", array_values($value)));
                         $backup_str .= "\$db->exe(\"REPLACE INTO $table_name (`" . implode("`,`", $field) . "`)
-						VALUES(" . implode(",", array_values($value)) . ")\");\n";
+						VALUES(" . $dataValue . ")\");\n";
                     }
                 }
                 //检测本次备份是否超出分卷大小
@@ -181,39 +201,39 @@ final class Backup
         self::update_config_file();
         //增加下一次分卷数
         $_GET['bid'] += 1;
-        $url = U(ACTION, array('status' => 1, 'bid' => $_GET['bid']));
+        $url = self::getUrl(array('status' => 1, 'bid' => $_GET['bid']));
         return array('status' => 'run', 'message' => "分卷{$_GET['bid']}备份完成，继续备份{$table}表", 'url' => $url);
     }
 
     //初始化
     static private function init($config)
     {
-        if(!isset($config['dir'])){
-            self::$error='请设置备份目录';
+        if (!isset($config['dir'])) {
+            self::$error = '请设置备份目录';
             return false;
-        }else{
+        } else {
             self::$dir = $config['dir'];
             //缓存备份目录
             F('backupDir', self::$dir);
         }
         //检测目录
         if (!Dir::create(self::$dir)) {
-            self::$error='备份目录创建失败';
+            self::$error = '备份目录创建失败';
             return false;
         }
         //数据库
-        if(!isset($config['database'])){
-            $config['database']=C('DB_DATABASE');
+        if (!isset($config['database'])) {
+            $config['database'] = C('DB_DATABASE');
         }
         //分卷大小,单位kb
         if (!isset($config['size'])) {
             $config['size'] = 200;
         }
         //备份时间间隔
-        if(isset($config['step_time'])){
-            $config['step_time']*=1000;
-        }else{
-            $config['step_time']=200;
+        if (isset($config['step_time'])) {
+            $config['step_time'] *= 1000;
+        } else {
+            $config['step_time'] = 200;
         }
         //所有表信息
         $tableInfo = M()->getAllTableInfo();

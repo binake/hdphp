@@ -19,8 +19,8 @@
  */
 /**
  * 加载核心模型
- * @param String  $table 表名
- * @param Boolean $full  是否为全表名
+ * @param String $table 表名
+ * @param Boolean $full 是否为全表名
  * @return Object 返回模型对象
  */
 function M($table = null, $full = null, $param = array(), $driver = null)
@@ -31,7 +31,7 @@ function M($table = null, $full = null, $param = array(), $driver = null)
 /**
  * 获得扩展模型
  * @param       $name  模型名不加Model后缀
- * @param bool  $full  是否为全表名
+ * @param bool $full 是否为全表名
  * @param array $param 参数
  * @return mixed
  */
@@ -42,8 +42,8 @@ function K($name, $full = null, $param = array(), $driver = null)
 }
 
 /**
- * @param String  $tableName 表名
- * @param Boolean $full      是否为全表
+ * @param String $tableName 表名
+ * @param Boolean $full 是否为全表
  * @return relationModel
  */
 function R($tableName = null, $full = null)
@@ -54,7 +54,7 @@ function R($tableName = null, $full = null)
 /**
  * 获得视图模型
  * @param null $table 表名
- * @param null $full  带前缀
+ * @param null $full 带前缀
  * @return ViewModel
  */
 function V($table = null, $full = null)
@@ -64,9 +64,9 @@ function V($table = null, $full = null)
 
 /**
  * 快速缓存 以文件形式缓存
- * @param String $name  缓存KEY
- * @param bool   $value 删除缓存
- * @param string $path  缓存目录
+ * @param String $name 缓存KEY
+ * @param bool $value 删除缓存
+ * @param string $path 缓存目录
  * @return bool
  */
 function F($name, $value = false, $path = APP_CACHE_PATH)
@@ -97,10 +97,10 @@ function F($name, $value = false, $path = APP_CACHE_PATH)
 
 /**
  * 缓存处理
- * @param string $name    缓存名称
- * @param bool   $value   缓存内容
- * @param null   $expire  缓存时间
- * @param array  $options 选项
+ * @param string $name 缓存名称
+ * @param bool $value 缓存内容
+ * @param null $expire 缓存时间
+ * @param array $options 选项
  *                        <code>
  *                        array("Driver"=>"file","dir"=>"Cache","Driver"=>"memcache")
  *                        </code>
@@ -125,8 +125,7 @@ function S($name, $value = false, $expire = null, $options = array())
         if (isset($_data[$key])) {
             Debug::$cache['read_s']++;
             return $_data[$key];
-        }
-        else {
+        } else {
             return $cacheObj->get($name, $expire);
         }
     }
@@ -170,8 +169,7 @@ function A($arg, $args = array())
             if (method_exists($class, $method)) {
                 if (empty($args)) {
                     return $obj->$method();
-                }
-                else {
+                } else {
                     return call_user_func_array(array(&$obj, $method), $args);
                 }
             }
@@ -181,9 +179,9 @@ function A($arg, $args = array())
 
 /**
  * 类库导入
- * @param null   $class 类名
- * @param null   $base  目录
- * @param string $ext   扩展名
+ * @param null $class 类名
+ * @param null $base 目录
+ * @param string $ext 扩展名
  * @return bool
  */
 function import($class = null, $base = null, $ext = ".class.php")
@@ -197,26 +195,22 @@ function import($class = null, $base = null, $ext = ".class.php")
              */
             $base = APP_PATH;
             $class = substr_replace($class, '', 0, strlen($info[0]) + 1);
-        }
-        elseif (strtoupper($info[0]) == 'HDPHP') {
+        } elseif (strtoupper($info[0]) == 'HDPHP') {
             /**
              * 框架中的类文件
              */
             $base = dirname(substr_replace($class, HDPHP_PATH, 0, 6)) . '/';
             $class = basename($class);
-        }
-        elseif (in_array($info[0], array("Lib", "Tag"))) {
+        } elseif (in_array($info[0], array("Lib", "Tag"))) {
             /**
              * 模块Lib目录文件
              */
             $base = MODULE_PATH;
-        }
-        else {
+        } else {
             $base = dirname($class) . '/';
             $class = basename($class);
         }
-    }
-    else {
+    } else {
         $base = str_replace('.', '/', $base);
     }
     /**
@@ -270,7 +264,7 @@ function require_cache($path = null)
  * 生成对象或执行对象方法
  * @param        $class  类名
  * @param string $method 方法
- * @param array  $args   参数
+ * @param array $args 参数
  * @return mixed
  */
 function O($class, $method = null, $args = array())
@@ -290,8 +284,7 @@ function O($class, $method = null, $args = array())
                 $args = array();
             }
             return call_user_func_array(array($obj, $method), $args);
-        }
-        else {
+        } else {
             return $obj;
         }
     }
@@ -308,8 +301,8 @@ function getControl($Control)
 /**
  * 实例化控制器并执行方法
  * @param       $class  控制器
- * @param null  $method 方法
- * @param array $args   参数
+ * @param null $method 方法
+ * @param array $args 参数
  * @return bool|mixed
  */
 function controller($class, $method = NULl, $args = array())
@@ -324,16 +317,15 @@ function controller($class, $method = NULl, $args = array())
             }
             return $obj;
         }
-    }
-    else {
+    } else {
         return false;
     }
 }
 
 /**
  * session处理
- * @param string|array $name  数组为初始session
- * @param string       $value 值
+ * @param string|array $name 数组为初始session
+ * @param string $value 值
  * @return mixed
  */
 function session($name = '', $value = '')
@@ -348,8 +340,10 @@ function session($name = '', $value = '')
             session_save_path($name['path']);
         if (isset($name['domain']))
             ini_set('session.cookie_domain', $name['domain']);
-        if (isset($name['expire']))
+        if (isset($name['expire'])) {
             ini_set('session.gc_maxlifetime', $name['expire']);
+            session_set_cookie_params($name['expire']);
+        }
         if (isset($name['use_trans_sid']))
             ini_set('session.use_trans_sid', $name['use_trans_sid'] ? 1 : 0);
         if (isset($name['use_cookies']))
@@ -365,49 +359,38 @@ function session($name = '', $value = '')
             $hander->run();
         }
         //自动开启SESSION
-        if (C("SESSION_AUTO_START")){
+        if (C("SESSION_AUTO_START")) {
             session_start();
         }
-    }
-    elseif ($name === '') {
+    } elseif ($name === '') {
         return $_SESSION;
-    }
-    elseif (is_null($name)) {
+    } elseif (is_null($name)) {
         $_SESSION = array();
         session_unset();
         session_destroy();
-    }
-    elseif ($value === '') {
+    } elseif ($value === '') {
         if ('[pause]' == $name) { // 暂停
             session_write_close();
-        }
-        elseif ('[start]' == $name) { //开启
+        } elseif ('[start]' == $name) { //开启
             session_start();
-        }
-        elseif ('[destroy]' == $name) { //销毁
+        } elseif ('[destroy]' == $name) { //销毁
             $_SESSION = array();
             session_unset();
             session_destroy();
-        }
-        elseif ('[regenerate]' == $name) { //生成id
+        } elseif ('[regenerate]' == $name) { //生成id
             session_regenerate_id();
-        }
-        elseif (0 === strpos($name, '?')) { // 检查session
+        } elseif (0 === strpos($name, '?')) { // 检查session
             $name = substr($name, 1);
             return isset($_SESSION[$name]);
-        }
-        elseif (is_null($name)) { // 清空session
+        } elseif (is_null($name)) { // 清空session
             $_SESSION = array();
-        }
-        else {
+        } else {
             return isset($_SESSION[$name]) ? $_SESSION[$name] : null;
         }
-    }
-    elseif (is_null($value)) { // 删除session
+    } elseif (is_null($value)) { // 删除session
         if (isset($_SESSION[$name]))
             unset($_SESSION[$name]);
-    }
-    else { //设置session
+    } else { //设置session
         $_SESSION[$name] = $value;
     }
 }
@@ -415,17 +398,17 @@ function session($name = '', $value = '')
 /**
  * cookie处理
  * @param        $name   名称
- * @param string $value  值
- * @param mixed  $option 选项
+ * @param string $value 值
+ * @param mixed $option 选项
  * @return mixed
  */
 function cookie($name, $value = '', $option = array())
 {
     // 默认设置
     $config = array('prefix' => C('COOKIE_PREFIX'), // cookie 名称前缀
-                    'expire' => C('COOKIE_EXPIRE'), // cookie 保存时间
-                    'path'   => C('COOKIE_PATH'), // cookie 保存路径
-                    'domain' => C('COOKIE_DOMAIN'), // cookie 有效域名
+        'expire' => C('COOKIE_EXPIRE'), // cookie 保存时间
+        'path' => C('COOKIE_PATH'), // cookie 保存路径
+        'domain' => C('COOKIE_DOMAIN'), // cookie 有效域名
     );
     // 参数设置(会覆盖黙认设置)
     if (!empty($option)) {
@@ -454,14 +437,12 @@ function cookie($name, $value = '', $option = array())
     if ('' === $value) {
         // 获取指定Cookie
         return isset($_COOKIE[$name]) ? json_decode(MAGIC_QUOTES_GPC ? stripslashes($_COOKIE[$name]) : $_COOKIE[$name]) : null;
-    }
-    else {
+    } else {
         if (is_null($value)) {
             setcookie($name, '', time() - 3600, $config['path'], $config['domain']);
             unset($_COOKIE[$name]);
             // 删除指定cookie
-        }
-        else {
+        } else {
             // 设置cookie
             $value = json_encode($value);
             $expire = !empty($config['expire']) ? time() + intval($config['expire']) : 0;
@@ -480,26 +461,19 @@ function browser_info()
     $browser = null;
     if (strstr($agent, 'msie 9.0')) {
         $browser = 'msie9';
-    }
-    else if (strstr($agent, 'msie 8.0')) {
+    } else if (strstr($agent, 'msie 8.0')) {
         $browser = 'msie8';
-    }
-    else if (strstr($agent, 'msie 7.0')) {
+    } else if (strstr($agent, 'msie 7.0')) {
         $browser = 'msie7';
-    }
-    else if (strstr($agent, 'msie 6.0')) {
+    } else if (strstr($agent, 'msie 6.0')) {
         $browser = 'msie6';
-    }
-    else if (strstr($agent, 'firefox')) {
+    } else if (strstr($agent, 'firefox')) {
         $browser = 'firefox';
-    }
-    else if (strstr($agent, 'chrome')) {
+    } else if (strstr($agent, 'chrome')) {
         $browser = 'chrome';
-    }
-    else if (strstr($agent, 'safari')) {
+    } else if (strstr($agent, 'safari')) {
         $browser = 'safari';
-    }
-    else if (strstr($agent, 'opera')) {
+    } else if (strstr($agent, 'opera')) {
         $browser = 'opera';
     }
     return $browser;
@@ -507,7 +481,7 @@ function browser_info()
 
 /**
  * 载入或设置配置顶
- * @param string $name  配置名
+ * @param string $name 配置名
  * @param string $value 配置值
  * @return bool|null
  */
@@ -516,31 +490,26 @@ function C($name = null, $value = null)
     static $config = array();
     if (is_null($name)) {
         return $config;
-    }
-    else if (is_string($name)) {
+    } else if (is_string($name)) {
         $name = strtoupper($name);
         $data = array_change_key_case($config, CASE_UPPER);
         if (!strstr($name, '.')) {
             //获得配置
             if (is_null($value)) {
                 return isset($data[$name]) ? $data[$name] : null;
-            }
-            else {
+            } else {
                 return $config[$name] = isset($data[$name]) && is_array($data[$name]) && is_array($value) ? array_merge($config[$name], $value) : $value;
             }
-        }
-        else {
+        } else {
             //二维数组
             $name = array_change_key_case(explode(".", $name));
             if (is_null($value)) {
                 return isset($data[$name[0]][$name[1]]) ? $data[$name[0]][$name[1]] : null;
-            }
-            else {
+            } else {
                 return $config[$name[0]][$name[1]] = $value;
             }
         }
-    }
-    else if (is_array($name)) {
+    } else if (is_array($name)) {
         return $config = array_merge($config, array_change_key_case($name, CASE_UPPER));
     }
 }
@@ -577,7 +546,7 @@ function L($name = null, $value = null)
  * 获取与设置请求参数
  * @param      $var     参数如 Q("cid) Q("get.cid") Q("get.")
  * @param null $default 默认值 当变量不存在时的值
- * @param null $filter  过滤函数
+ * @param null $filter 过滤函数
  * @return array|null
  */
 function Q($var, $default = null, $filter = null)
@@ -621,8 +590,7 @@ function Q($var, $default = null, $filter = null)
     if (empty($var[1])) {
         return $data;
         //如果存在数据如$this->_get("page")，$_GET中存在page数据
-    }
-    else if (isset($data[$var[1]])) {
+    } else if (isset($data[$var[1]])) {
         //要获得参数如$this->_get("page")中的page
         $value = $data[$var[1]];
         //对参数进行过滤的函数
@@ -644,8 +612,7 @@ function Q($var, $default = null, $filter = null)
         }
         return $value;
 
-    }
-    else {
+    } else {
         $data[$var[1]] = $default;
         return $default;
     }
@@ -659,19 +626,17 @@ function p($var)
 {
     if (is_bool($var)) {
         var_dump($var);
-    }
-    else if (is_null($var)) {
+    } else if (is_null($var)) {
         var_dump(NULL);
-    }
-    else {
+    } else {
         echo "<pre style='position:relative;z-index:1000;padding:10px;border-radius:5px;background:#F5F5F5;border:1px solid #aaa;font-size:14px;line-height:18px;opacity:0.9;'>" . print_r($var, true) . "</pre>";
     }
 }
 
 /**
  * 跳转网址
- * @param string $url  跳转urlg
- * @param int    $time 跳转时间
+ * @param string $url 跳转urlg
+ * @param int $time 跳转时间
  * @param string $msg
  */
 function go($url, $time = 0, $msg = '')
@@ -680,8 +645,7 @@ function go($url, $time = 0, $msg = '')
     if (!headers_sent()) {
         $time == 0 ? header("Location:" . $url) : header("refresh:{$time};url={$url}");
         exit($msg);
-    }
-    else {
+    } else {
         echo "<meta http-equiv='Refresh' content='{$time};URL={$url}'>";
         if ($time)
             exit($msg);
@@ -691,9 +655,9 @@ function go($url, $time = 0, $msg = '')
 /**
  * 计算脚本运行时间
  * 传递$end参数时为得到执行时间
- * @param string $start    开始标识
- * @param string $end      结束标识
- * @param int    $decimals 小数位
+ * @param string $start 开始标识
+ * @param string $end 结束标识
+ * @param int $decimals 小数位
  * @return string
  */
 function runtime($start, $end = '', $decimals = 3)
@@ -718,22 +682,17 @@ function ip_get_client($type = 0)
     if (isset($_SERVER)) {
         if (isset($_SERVER["HTTP_X_FORWARDED_FOR"])) {
             $ip = $_SERVER["HTTP_X_FORWARDED_FOR"];
-        }
-        else if (isset($_SERVER["HTTP_CLIENT_IP"])) {
+        } else if (isset($_SERVER["HTTP_CLIENT_IP"])) {
             $ip = $_SERVER["HTTP_CLIENT_IP"];
-        }
-        else {
+        } else {
             $ip = $_SERVER["REMOTE_ADDR"];
         }
-    }
-    else {
+    } else {
         if (getenv("HTTP_X_FORWARDED_FOR")) {
             $ip = getenv("HTTP_X_FORWARDED_FOR");
-        }
-        else if (getenv("HTTP_CLIENT_IP")) {
+        } else if (getenv("HTTP_CLIENT_IP")) {
             $ip = getenv("HTTP_CLIENT_IP");
-        }
-        else {
+        } else {
             $ip = getenv("REMOTE_ADDR");
         }
     }
@@ -772,8 +731,7 @@ function addslashes_d($data)
             if (is_array($v)) {
                 $var[$k] = addslashes_d($v);
                 continue;
-            }
-            else {
+            } else {
                 $var[$k] = addslashes($v);
             }
         }
@@ -790,18 +748,15 @@ function stripslashes_d($data)
 {
     if (empty($data)) {
         return $data;
-    }
-    elseif (is_string($data)) {
+    } elseif (is_string($data)) {
         return stripslashes($data);
-    }
-    elseif (is_array($data)) {
+    } elseif (is_array($data)) {
         $var = array();
         foreach ($data as $k => $v) {
             if (is_array($v)) {
                 $var[$k] = stripslashes_d($v);
                 continue;
-            }
-            else {
+            } else {
                 $var[$k] = stripslashes($v);
             }
         }
@@ -812,7 +767,7 @@ function stripslashes_d($data)
 /**
  * 将数组转为字符串表示形式
  * @param array $array 数组
- * @param int   $level 等级不要传参数
+ * @param int $level 等级不要传参数
  * @return string
  */
 function array_to_String($array, $level = 0)
@@ -832,8 +787,7 @@ function array_to_String($array, $level = 0)
         $v = !is_array($v) && (!preg_match("/^\-?[1-9]\d*$/", $v) || strlen($v) > 12) ? '\'' . addcslashes($v, '\'\\') . '\'' : $v;
         if (is_array($v)) {
             $arr .= "$c$k=>" . array_to_String($v, $level + 1);
-        }
-        else {
+        } else {
             $arr .= "$c$k=>$v";
         }
         $c = ",\n$space";
@@ -908,7 +862,7 @@ function rand_str($len = 6)
 /**
  * 加密方法
  * @param      $data 加密字符串
- * @param null $key  密钥
+ * @param null $key 密钥
  * @return mixed|string
  */
 function encrypt($data, $key = null)
@@ -919,7 +873,7 @@ function encrypt($data, $key = null)
 /**
  * 解密方法
  * @param string $data 解密字符串
- * @param null   $key  密钥
+ * @param null $key 密钥
  * @return mixed
  */
 function decrypt($data, $key = null)
@@ -942,8 +896,7 @@ function data_format(&$data, $func = null)
     foreach ($functions as $_func) {
         if (is_string($data)) { //字符串数据
             $data = $_func($data);
-        }
-        else if (is_array($data)) { //数组数据
+        } else if (is_array($data)) { //数组数据
             foreach ($data as $k => $d) {
                 $data[$k] = is_array($d) ? data_format($d, $functions) : $_func($d);
             }
@@ -955,7 +908,7 @@ function data_format(&$data, $func = null)
 /**
  * 获得变量值
  * @param string $varName 变量名
- * @param mixed  $value   值
+ * @param mixed $value 值
  * @return mixed
  */
 function _default($varName, $value = "")
@@ -965,9 +918,9 @@ function _default($varName, $value = "")
 
 /**
  * 请求方式
- * @param string $method  类型
+ * @param string $method 类型
  * @param string $varName 变量名
- * @param bool   $html    实体化
+ * @param bool $html 实体化
  * @return mixed
  */
 function _request($method, $varName = null, $html = true)
@@ -1020,12 +973,12 @@ function _request($method, $varName = null, $html = true)
 function set_http_state($code)
 {
     $state = array(200 => 'OK', // Success 2xx
-                   // Redirection 3xx
-                   301 => 'Moved Permanently', 302 => 'Moved Temporarily ',
-                   // Client Error 4xx
-                   400 => 'Bad Request', 403 => 'Forbidden', 404 => 'Not Found',
-                   // Server Error 5xx
-                   500 => 'Internal Server Error', 503 => 'Service Unavailable',
+        // Redirection 3xx
+        301 => 'Moved Permanently', 302 => 'Moved Temporarily ',
+        // Client Error 4xx
+        400 => 'Bad Request', 403 => 'Forbidden', 404 => 'Not Found',
+        // Server Error 5xx
+        500 => 'Internal Server Error', 503 => 'Service Unavailable',
     );
     if (isset($state[$code])) {
         header('HTTP/1.1 ' . $code . ' ' . $state[$code]);
@@ -1042,8 +995,7 @@ function is_ssl()
 {
     if (isset($_SERVER['HTTPS']) && ('1' == $_SERVER['HTTPS'] || 'on' == strtolower($_SERVER['HTTPS']))) {
         return true;
-    }
-    elseif (isset($_SERVER['SERVER_PORT']) && ('443' == $_SERVER['SERVER_PORT'])) {
+    } elseif (isset($_SERVER['SERVER_PORT']) && ('443' == $_SERVER['SERVER_PORT'])) {
         return true;
     }
     return false;
@@ -1064,7 +1016,7 @@ function print_const()
 
 /**
  * 获得几天前，几小时前，几月前
- * @param int   $time 时间戳
+ * @param int $time 时间戳
  * @param array $unit 时间单位
  * @return bool|string
  */
@@ -1099,8 +1051,7 @@ function get_uuid($sep = '')
 {
     if (function_exists('com_create_guid')) {
         return com_create_guid();
-    }
-    else {
+    } else {
         mt_srand((double)microtime() * 10000);
         //optional for php 4.2.0 and up.
         $id = strtoupper(md5(uniqid(rand(), true)));
@@ -1114,7 +1065,7 @@ function get_uuid($sep = '')
 /**
  * 根据配置文件的URL参数重新生成URL地址
  * @param String $path 访问url
- * @param array  $args GET参数
+ * @param array $args GET参数
  *                     <code>
  *                     $args = "nid=2&cid=1"
  *                     $args=array("nid"=>2,"cid"=>1)
@@ -1127,9 +1078,37 @@ function U($path, $args = array())
 }
 
 /**
+ * 插件URL
+ * @param $path
+ * @param $param
+ * @return mixed
+ */
+function addon_url($path, $param = array())
+{
+    if (!empty($param)) {
+        $param = '&' . http_build_query($param);
+    } else {
+        $param = '';
+    }
+    $info = explode('/', $path);
+    switch (count($info)) {
+        case 3:
+            $url = __ROOT__ . "/index.php?g=Addons&m={$info[0]}&c={$info[1]}&a={$info[2]}" . $param;
+            break;
+        case 2:
+            $url = __ROOT__ . "/index.php?g=Addons&m=" . MODULE . "&c={$info[0]}&a={$info[1]}" . $param;
+            break;
+        case 1:
+            $url = __ROOT__ . "/index.php?g=Addons&m=" . MODULE . "&c=" . CONTROLLER . "&a={$info[0]}" . $param;
+            break;
+    }
+    return $url;
+}
+
+/**
  * 记录缓存读写与数据库操作次数
  * @param string $name 缓存的KEY
- * @param int    $num  缓存次数
+ * @param int $num 缓存次数
  * @return void
  */
 function N($name, $num = NULL)
@@ -1141,8 +1120,7 @@ function N($name, $num = NULL)
     }
     if (is_null($num)) { //获得计数
         return $data[$name];
-    }
-    else { //更改缓存记数
+    } else { //更改缓存记数
         $data[$name] += (int)$num;
     }
 }
@@ -1169,7 +1147,7 @@ function hash_hd($data, $len)
 /**
  * 递归创建目录
  * @param string $dirName 目录
- * @param int    $auth    权限
+ * @param int $auth 权限
  * @return bool
  */
 function dir_create($dirName, $auth = 0755)
@@ -1190,7 +1168,7 @@ function dir_create($dirName, $auth = 0755)
 /**
  * 日期格式化
  * 使用自定义标签时格式化标准ISO日期
- * @param int    $time
+ * @param int $time
  * @param string $format
  * @return bool|string
  */
@@ -1203,8 +1181,8 @@ function hd_date($time, $format = 'Y-m-d')
  * 截取长度
  * 使用自定义标签时截取字符串
  * @param        $string 字符串
- * @param int    $len    长度
- * @param string $end    结尾符
+ * @param int $len 长度
+ * @param string $end 结尾符
  * @return string
  */
 function hd_substr($string, $len = 20, $end = '...')
@@ -1242,7 +1220,7 @@ function load($file)
 /**
  * 别名导入
  * @param string | array $name 别名
- * @param string         $path 文件路径
+ * @param string $path 文件路径
  * @return bool
  */
 function alias_import($name = null, $path = null)
@@ -1263,14 +1241,12 @@ function alias_import($name = null, $path = null)
          */
         $_alias = array_merge($_alias, array_change_key_case($name));
         return true;
-    }
-    else if (!is_null($path)) {
+    } else if (!is_null($path)) {
         /**
          * 定义一条别名规则
          */
         return $_alias[$name] = $path;
-    }
-    else if (isset($_alias[strtolower($name)])) {
+    } else if (isset($_alias[strtolower($name)])) {
         /**
          * 加载别名定义文件
          */
@@ -1348,11 +1324,9 @@ function array_defined($arr)
         $k = strtoupper($k);
         if (is_string($v)) {
             define($k, $v);
-        }
-        elseif (is_numeric($v)) {
+        } elseif (is_numeric($v)) {
             defined($k, $v);
-        }
-        elseif (is_bool($v)) {
+        } elseif (is_bool($v)) {
             $v = $v ? 'true' : 'false';
             define($k, $v);
         }
@@ -1362,8 +1336,8 @@ function array_defined($arr)
 
 /**
  * 将数组键名变成大写或小写
- * @param array $arr  数组
- * @param int   $type 转换方式 1大写   0小写
+ * @param array $arr 数组
+ * @param int $type 转换方式 1大写   0小写
  * @return array
  */
 function array_change_key_case_d($arr, $type = 0)
@@ -1376,8 +1350,7 @@ function array_change_key_case_d($arr, $type = 0)
         $k = $function($k);
         if (is_array($v)) {
             $newArr[$k] = array_change_key_case_d($v, $type);
-        }
-        else {
+        } else {
             $newArr[$k] = $v;
         }
     }
@@ -1406,7 +1379,7 @@ function array_to_object($arr)
 /**
  * 将数组中的值全部转为大写或小写
  * @param array $arr
- * @param int   $type 类型 1值大写 0值小写
+ * @param int $type 类型 1值大写 0值小写
  * @return array
  */
 function array_change_value_case($arr, $type = 0)
@@ -1416,8 +1389,7 @@ function array_change_value_case($arr, $type = 0)
     foreach ($arr as $k => $v) {
         if (is_array($v)) {
             $newArr[$k] = array_change_value_case($v, $type);
-        }
-        else {
+        } else {
             $newArr[$k] = $function($v);
         }
     }
@@ -1428,8 +1400,8 @@ function array_change_value_case($arr, $type = 0)
 /**
  * 多个PHP文件合并
  * @param array $files 文件列表
- * @param bool  $space 是否去除空白
- * @param bool  $tag   是否加<?php标签头尾
+ * @param bool $space 是否去除空白
+ * @param bool $tag 是否加<?php标签头尾
  * @return string 合并后的字符串
  */
 function file_merge($files, $space = false, $tag = false)
@@ -1459,8 +1431,7 @@ function compress($content)
         if (is_string($data[$i])) {
             $end = false;
             $str .= $data[$i];
-        }
-        else {
+        } else {
             switch ($data[$i][0]) { //检测类型
                 //忽略单行多行注释
                 case T_COMMENT:
@@ -1503,9 +1474,9 @@ function compress($content)
 
 /**
  * 获得常量
- * @param   string $name  常量名称，默认为获得所有常量
- * @param   void   $value 常量不存在时的返回值
- * @param   string $type  常量类型，默认为用户自定义常量,参数为true获得所有常量
+ * @param   string $name 常量名称，默认为获得所有常量
+ * @param   void $value 常量不存在时的返回值
+ * @param   string $type 常量类型，默认为用户自定义常量,参数为true获得所有常量
  * @return  array   常量数组
  */
 function get_defines($name = "", $value = null, $type = 'user')
@@ -1521,17 +1492,16 @@ function get_defines($name = "", $value = null, $type = 'user')
 
 /**
  * 抛出异常
- * @param string $msg  错误信息
+ * @param string $msg 错误信息
  * @param string $type 异常类
- * @param int    $code 编码
+ * @param int $code 编码
  * @throws
  */
 function throw_exception($msg, $type = "HdException", $code = 0)
 {
     if (class_exists($type, false)) {
         throw new $type($msg, $code, true);
-    }
-    else {
+    } else {
         halt($msg);
     }
 }
@@ -1571,17 +1541,14 @@ function halt($error)
             ob_start();
             debug_print_backtrace();
             $e['trace'] = htmlspecialchars(ob_get_clean());
-        }
-        else {
+        } else {
             $e = $error;
         }
-    }
-    else {
+    } else {
         //错误显示url
         if ($_url = C('ERROR_URL')) {
             go($_url);
-        }
-        else {
+        } else {
             $e['message'] = C('ERROR_MESSAGE');
         }
     }
@@ -1603,7 +1570,7 @@ function error($error)
  * trace记录
  * @param string $value 错误信息
  * @param string $level
- * @param bool   $record
+ * @param bool $record
  * @return mixed
  */
 function trace($value = '[HDPHP]', $level = 'DEBUG', $record = false)
@@ -1611,8 +1578,7 @@ function trace($value = '[HDPHP]', $level = 'DEBUG', $record = false)
     static $_trace = array();
     if ('[HDPHP]' === $value) { // 获取trace信息
         return $_trace;
-    }
-    else {
+    } else {
         $info = ' : ' . print_r($value, true);
         //调试模式时处理ERROR类型
         if (DEBUG && 'ERROR' == $level) {

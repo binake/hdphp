@@ -176,7 +176,6 @@ final class ViewHd
     {
         $cachePath = $cachePath ? $cachePath : APP_CACHE_PATH;
         $cacheName = md5($_SERVER['REQUEST_URI']);
-
         return S(
             $cacheName, false, null,
             array("dir" => $cachePath, "Driver" => "File")
@@ -197,17 +196,20 @@ final class ViewHd
              * 没有传参时使用 动作为为文件名
              */
             $file = CONTROLLER_VIEW_PATH . ACTION;
-        } else if (!strstr($file, '/')) {
-            /**
-             * 没有路径时使用控制器视图目录
-             */
-            $file = CONTROLLER_VIEW_PATH . $file;
         }
-        /**
-         * 添加后缀
-         */
-        if (!preg_match('/\.[a-z]/i', $file)) {
-            $file .= C('TPL_FIX');
+        if (!is_file($file)) {
+            if (!strstr($file, '/')) {
+                /**
+                 * 没有路径时使用控制器视图目录
+                 */
+                $file = CONTROLLER_VIEW_PATH . $file;
+            }
+            /**
+             * 添加后缀
+             */
+            if (!preg_match('/\.[a-z]$/i', $file)) {
+                $file .= C('TPL_FIX');
+            }
         }
         /**
          * 模板文件检测

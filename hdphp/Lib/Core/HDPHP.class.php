@@ -161,7 +161,6 @@ final class HDPHP
             case E_PARSE:
             case E_CORE_ERROR:
             case E_COMPILE_ERROR:
-            case E_DEPRECATED://忽略不建议使用的错误提示
             case E_USER_ERROR:
                 ob_end_clean();
                 $msg = $error. $file . " 第 $line 行.";

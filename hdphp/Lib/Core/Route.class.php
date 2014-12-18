@@ -384,18 +384,6 @@ final class Route
             return $path;
         }
         /**
-         * 参数$args为字符串时转数组
-         */
-        if (is_string($args)) {
-            parse_str($args, $args);
-        }
-        /**
-         * 模块组时添加g参数
-         */
-        if (!empty($_GET[C('VAR_GROUP')])) {
-            $args[C('VAR_GROUP')] = $_GET[C('VAR_GROUP')];
-        }
-        /**
          * 开启伪静态时去除入口文件
          */
         $root = C('URL_REWRITE') ? preg_replace('/\/?[a-z]+\.php/i', '', __WEB__) : __WEB__;
@@ -413,62 +401,77 @@ final class Route
                 $root .= (C('URL_REWRITE') ? '/' : '?') . C('PATHINFO_VAR') . '=';
                 break;
         }
-        $action = array();
-        $info = explode('/', $path);
-        if (count($info) > 3) {
-            $param = array_slice($info, 3);
-            $info = array_slice($info, 0, 3);
-            for ($i = 0; $i < count($param); $i += 2) {
-                $args[$param[$i]] = $param[$i + 1];
+        if (preg_match('@[^\w/]@i', $path)) {
+            /**
+             * 参数如: m=Index&c=Index&a=index&cid=1&page=2
+             * 这样形式时直接进行路由解析
+             * 比如在分页类时使用
+             */
+            return $root . Route::toUrl($path) . C('HTML_SUFFIX');
+        } else {
+            $action = array();
+            $info = explode('/', $path);
+            if (count($info) > 3) {
+                $param = array_slice($info, 3);
+                $info = array_slice($info, 0, 3);
+                for ($i = 0; $i < count($param); $i += 2) {
+                    $args[$param[$i]] = $param[$i + 1];
+                }
             }
-        }
-        switch (count($info)) {
-            case 3:
-                $action[C("VAR_MODULE")] = ucfirst($info[0]);
-                $action[C("VAR_CONTROLLER")] = ucfirst($info[1]);
-                $action[C("VAR_ACTION")] = $info[2];
-                break;
-            case 2:
-                $action[C("VAR_MODULE")] = ucfirst(MODULE);
-                $action[C("VAR_CONTROLLER")] = ucfirst($info[0]);
-                $action[C("VAR_ACTION")] = $info[1];
-                break;
-            case 1:
-                $action[C("VAR_MODULE")] = ucfirst(MODULE);
-                $action[C("VAR_CONTROLLER")] = ucfirst(CONTROLLER);
-                $action[C("VAR_ACTION")] = $info[0];
-                break;
-            default:
+            switch (count($info)) {
+                case 3:
+                    $action[C("VAR_MODULE")] = ucfirst($info[0]);
+                    $action[C("VAR_CONTROLLER")] = ucfirst($info[1]);
+                    $action[C("VAR_ACTION")] = $info[2];
+                    break;
+                case 2:
+                    $action[C("VAR_MODULE")] = ucfirst(MODULE);
+                    $action[C("VAR_CONTROLLER")] = ucfirst($info[0]);
+                    $action[C("VAR_ACTION")] = $info[1];
+                    break;
+                case 1:
+                    $action[C("VAR_MODULE")] = ucfirst(MODULE);
+                    $action[C("VAR_CONTROLLER")] = ucfirst(CONTROLLER);
+                    $action[C("VAR_ACTION")] = $info[0];
+                    break;
+                default:
 
-        }
-        switch (C("URL_TYPE")) {
-            case 1:
-            case 3:
-                $url = $action[C("VAR_MODULE")] . '/' . $action[C("VAR_CONTROLLER")] . '/' . $action[C("VAR_ACTION")];
-                break;
-            case 2:
-                $url = C("VAR_MODULE") . '=' . $action[C("VAR_MODULE")] . '&' . C("VAR_CONTROLLER") . '=' . $action[C("VAR_CONTROLLER")] . '&' .
-                    C("VAR_ACTION") . '=' . $action[C("VAR_ACTION")];
-                break;
-        }
-        /**
-         * 处理参数
-         */
-        if (!empty($args)) {
+            }
             switch (C("URL_TYPE")) {
                 case 1:
                 case 3:
-                    foreach ($args as $name => $value) {
-                        $url .= '/' . $name . '/' . $value;
-                    }
+                    $url = $action[C("VAR_MODULE")] . '/' . $action[C("VAR_CONTROLLER")] . '/' . $action[C("VAR_ACTION")];
                     break;
                 case 2:
-                    foreach ($args as $name => $value) {
-                        $url .= '&' . $name . '=' . $value;
-                    }
+                    $url = C("VAR_MODULE") . '=' . $action[C("VAR_MODULE")] . '&' . C("VAR_CONTROLLER") . '=' . $action[C("VAR_CONTROLLER")] . '&' .
+                        C("VAR_ACTION") . '=' . $action[C("VAR_ACTION")];
                     break;
             }
+            /**
+             * 参数$args为字符串时转数组
+             */
+            if (is_string($args)) {
+                parse_str($args, $args);
+            }
+            /**
+             * 处理参数
+             */
+            if (!empty($args)) {
+                switch (C("URL_TYPE")) {
+                    case 1:
+                    case 3:
+                        foreach ($args as $name => $value) {
+                            $url .= '/' . $name . '/' . $value;
+                        }
+                        break;
+                    case 2:
+                        foreach ($args as $name => $value) {
+                            $url .= '&' . $name . '=' . $value;
+                        }
+                        break;
+                }
+            }
+            return $root . Route::toUrl($url) . C('HTML_SUFFIX');
         }
-        return $root . Route::toUrl($url) . C('HTML_SUFFIX');
     }
 }

@@ -103,7 +103,10 @@ class Page
         } else {
             $returnUrl = str_replace(self::$pageNumLabel, $pageNum, $returnUrl);
         }
-        return self::$staticUrl ? $returnUrl : U($returnUrl);
+        /**
+         * 路由解析
+         */
+        return U($returnUrl);
     }
 
     //配置URL地址
