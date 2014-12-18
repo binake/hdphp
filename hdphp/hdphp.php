@@ -16,7 +16,7 @@
  * @supackage core
  * @author hdxj <houdunwangxj@gmail.com>
  */
-define('HDPHP_VERSION', '2014-12-18');
+define('HDPHP_VERSION', '2014-12-19');
 defined("DEBUG")        	or define("DEBUG", FALSE);//调试模式
 defined("DEBUG_TOOL")       or define("DEBUG_TOOL", FALSE);//调试工具
 defined('APP_PATH') 		or define('APP_PATH', './Application/');//应用目录
