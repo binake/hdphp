@@ -111,7 +111,7 @@ class DbPdo extends Db
          * 查询参数初始化
          */
         $this->optInit();
-        $cacheName = $sql . APP . CONTROLLER . ACTION;
+        $cacheName =md5($sql . APP . CONTROLLER . ACTION);
         if ($cacheTime > -1) {
             $result = S($cacheName, FALSE, null, array("Driver" => "file", "dir" => APP_CACHE_PATH, "zip" => false));
             if ($result) {
