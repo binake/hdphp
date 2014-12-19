@@ -36,18 +36,18 @@ class SessionMysql
         $options = C("SESSION_OPTIONS");
         //数据表
         $this->table = C('DB_PREFIX') . $options['table'];
-        $this->expire = isset($options['expire']) ? $options['expire'] : 86400; //过期时间
+        $this->expire = isset($options['expire']) ? $options['expire'] : 3600; //过期时间
         $host = isset($options['host']) ? $options['host'] : C("DB_HOST");
         $port = isset($options['port']) ? $options['port'] : C("DB_PORT");
         $user = isset($options['user']) ? $options['user'] : C("DB_USER");
         $password = isset($options['password']) ? $options['password'] : C("DB_PASSWORD");
         $database = isset($options['database']) ? $options['database'] : C("DB_DATABASE");
         //连接Mysql
-        $this->link = new mysqli($host, $user, $password,$database,$port);
+        $this->link = mysql_connect($host . ':' . $port, $user, $password);
         //选择数据库
-//        $db = mysql_select_db($database, $this->link);
-        if (!$this->link) return false;
-        $this->link->query("SET NAMES " . str_replace("_", "", C("DB_CHARSET"))); //字符集
+        $db = mysql_select_db($database, $this->link);
+        if (!$this->link || !$db) return false;
+        mysql_query("SET NAMES " . str_replace("_", "", C("DB_CHARSET"))); //字符集
         session_set_save_handler(
             array(&$this, "open"),
             array(&$this, "close"),
@@ -75,9 +75,9 @@ class SessionMysql
     public function read($id)
     {
         $sql = "SELECT data FROM " . $this->table . " WHERE sessid='$id' AND atime>" . (time() - $this->expire);
-        $result = $this->link->query($sql);
+        $result = mysql_query($sql, $this->link);
         if ($result) {
-            $data = $result->fetch_assoc();
+            $data = mysql_fetch_assoc($result);
             return $data['data'];
         }
         return '';
@@ -91,19 +91,10 @@ class SessionMysql
      */
     public function write($id, $data)
     {
-//        $sql = sprintf("REPLACE INTO `".$this->table."` VALUES('%s', '%s', '%s','%s')",
-//            mysql_real_escape_string($id),
-//            mysql_real_escape_string($data),
-//            mysql_real_escape_string(time()),
-//            mysql_real_escape_string(ip_get_client())
-//            );
-//
-//        return mysql_query($sql, $this->link);
-
         $ip = ip_get_client();
         $sql = "REPLACE INTO " . $this->table . "(sessid,data,atime,ip) ";
         $sql .= "VALUES('$id','$data'," . time() . ",'$ip')";
-        return $this->link->query($sql);
+        return mysql_query($sql, $this->link);
     }
 
     /**
@@ -114,7 +105,7 @@ class SessionMysql
     public function destroy($id)
     {
         $sql = "DELETE FROM " . $this->table . " WHERE sessid='$id'";
-        return $this->link->query($sql);
+        return mysql_query($sql, $this->link);
     }
 
     /**
@@ -124,7 +115,7 @@ class SessionMysql
     public function gc()
     {
         $sql = "DELETE FROM " . $this->table . " WHERE atime<" . (NOW - $this->expire) . " AND sessid<>'" . session_id() . "'";
-        return $this->link->query($sql);
+        return mysql_query($sql, $this->link);
     }
 
 
@@ -135,7 +126,7 @@ class SessionMysql
             $this->gc();
         }
         //关闭数据库连接
-        return $this->link->close();
+        return mysql_close($this->link);
     }
 
     function __destruct()

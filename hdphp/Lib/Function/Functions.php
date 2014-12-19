@@ -212,6 +212,9 @@ function import($class = null, $base = null, $ext = ".class.php")
         }
     } else {
         $base = str_replace('.', '/', $base);
+        if(substr($base,-1)!='/'){
+            $base.='/';
+        }
     }
     /**
      * 类文件
