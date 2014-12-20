@@ -26,7 +26,18 @@ final class HDPHP
         //禁止使用模块检测
         in_array(MODULE,C('DENY_MODULE')) && halt(MODULE.'模块禁止使用');
         //常量定义
-        defined('MODULE_PATH')                                  or define('MODULE_PATH',empty($_GET[C('VAR_GROUP')])?APP_PATH.MODULE.'/':APP_PATH.$_GET[C('VAR_GROUP')].'/'.MODULE.'/');
+        if(!defined('MODULE_PATH')){
+            if(empty($_GET[C('VAR_GROUP')])){
+                //普通模块
+                define('MODULE_PATH',APP_PATH.MODULE.'/');
+            }else if($_GET[C('VAR_GROUP')]=='Addon'){
+                //插件模块
+                define('MODULE_PATH',APP_ADDON_PATH.MODULE.'/');
+            }else{
+                //根据应用组目录识别模块
+                define('MODULE_PATH',APP_PATH.$_GET[C('VAR_GROUP')].'/'.MODULE.'/');
+            }
+        }
         defined('MODULE_CONTROLLER_PATH')                       or define('MODULE_CONTROLLER_PATH', MODULE_PATH . 'Controller/');
         defined('MODULE_MODEL_PATH')                            or define('MODULE_MODEL_PATH', MODULE_PATH . 'Model/');
         defined('MODULE_CONFIG_PATH')                           or define('MODULE_CONFIG_PATH', MODULE_PATH . 'Config/');
@@ -39,7 +50,7 @@ final class HDPHP
         is_file(MODULE_LANGUAGE_PATH . C('LANGUAGE') . '.php')  and L(require MODULE_LANGUAGE_PATH . C('LANGUAGE') . '.php');
         //模板目录常量
         defined('MODULE_VIEW_PATH')                             or define('MODULE_VIEW_PATH',strstr(C('TPL_PATH'),'/')?C('TPL_PATH').C('TPL_STYLE'):
-                                                                                            MODULE_PATH.C('TPL_PATH').'/'.C('TPL_STYLE'));
+            MODULE_PATH.C('TPL_PATH').'/'.C('TPL_STYLE'));
         defined('MODULE_PUBLIC_PATH')                           or define('MODULE_PUBLIC_PATH', MODULE_VIEW_PATH .'Public/');
         defined('CONTROLLER_VIEW_PATH')                         or define('CONTROLLER_VIEW_PATH',MODULE_VIEW_PATH.CONTROLLER.'/');
         //网站根-Static目录

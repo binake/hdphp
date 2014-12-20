@@ -212,9 +212,6 @@ function import($class = null, $base = null, $ext = ".class.php")
         }
     } else {
         $base = str_replace('.', '/', $base);
-        if(substr($base,-1)!='/'){
-            $base.='/';
-        }
     }
     /**
      * 类文件
@@ -1096,13 +1093,13 @@ function addon_url($path, $param = array())
     $info = explode('/', $path);
     switch (count($info)) {
         case 3:
-            $url = __ROOT__ . "/index.php?g=Addons&m={$info[0]}&c={$info[1]}&a={$info[2]}" . $param;
+            $url = __ROOT__ . "/index.php?g=Addon&m={$info[0]}&c={$info[1]}&a={$info[2]}" . $param;
             break;
         case 2:
-            $url = __ROOT__ . "/index.php?g=Addons&m=" . MODULE . "&c={$info[0]}&a={$info[1]}" . $param;
+            $url = __ROOT__ . "/index.php?g=Addon&m=" . MODULE . "&c={$info[0]}&a={$info[1]}" . $param;
             break;
         case 1:
-            $url = __ROOT__ . "/index.php?g=Addons&m=" . MODULE . "&c=" . CONTROLLER . "&a={$info[0]}" . $param;
+            $url = __ROOT__ . "/index.php?g=Addon&m=" . MODULE . "&c=" . CONTROLLER . "&a={$info[0]}" . $param;
             break;
     }
     return $url;
