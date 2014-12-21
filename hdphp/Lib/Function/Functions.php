@@ -91,7 +91,7 @@ function F($name, $value = false, $path = APP_CACHE_PATH)
     if (!file_put_contents($cacheFile, $data)) {
         return false;
     }
-    $_cache[$name] = $data;
+    $_cache[$name] = $value;
     return true;
 }
 

@@ -325,8 +325,7 @@ class Image
             $g = hexdec(substr($this->waterTextColor, 3, 2));
             $b = hexdec(substr($this->waterTextColor, 5, 2));
             $color = imagecolorallocate($resImg, $r, $g, $b);
-            $charset = strtoupper(C('CHARSET')) === "UTF8" ? "UTF-8" : strtoupper(C('CHARSET'));
-            imagettftext($resImg, $this->waterTextSize, 0, $x, $y, $color, $this->waterTextFont, iconv($charset, 'utf-8', $text));
+            imagettftext($resImg, $this->waterTextSize, 0, $x, $y, $color, $this->waterTextFont, $text);
         }
         switch ($imgInfo [2]) {
             case 1 :

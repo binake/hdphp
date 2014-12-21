@@ -33,11 +33,7 @@ final class Backup
     //还原数据
     static public function recovery($option)
     {
-        if (!Q('status')) F('backupDir', null);
-        if (!F('backupDir')) {
-            F('backupDir', $option['dir']);
-        }
-        $dir = F('backupDir');
+        $dir =$option['dir'];
         //检测目录是否存在
         if (!is_dir($dir)) {
             F('backupDir', null);

@@ -160,7 +160,6 @@ php;
     public function _elseif($attr, $content, &$hd)
     {
         $php = "<?php }else if({$attr['value']}){ ?>";
-        $php .= $content;
 
         return $php;
     }
