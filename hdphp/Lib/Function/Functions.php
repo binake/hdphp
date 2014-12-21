@@ -71,7 +71,7 @@ function V($table = null, $full = null)
  */
 function F($name, $value = false, $path = APP_CACHE_PATH)
 {
-    $_cache = array();
+    static $_cache = array();
     $cacheFile = rtrim($path, '/') . '/' . $name . '.php';
     if (is_null($value)) {
         if (is_file($cacheFile)) {
