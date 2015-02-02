@@ -1,5 +1,5 @@
 <?php
-//开启调试模型
+//开启调试模型 
 define('DEBUG',True);
 //显示DEBUG面板
 define('DEBUG_TOOL',true);
